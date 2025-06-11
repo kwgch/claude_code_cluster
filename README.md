@@ -361,74 +361,69 @@ You don't always need to fill out every field. Here are some minimal examples th
 
 ```markdown
 ### Task Description
-Discuss "the unexpected fusion of knowledge from different fields" and compile a report
+Analyze this codebase from 4 perspectives: security vulnerabilities, performance bottlenecks, code quality issues, and architectural improvements. Create a unified improvement plan.
 ```
 
 ```markdown
 ### Task Description
-Build a REST API for a blog system with CRUD operations
+Build a real-time chat application with separate teams handling: WebSocket server, React frontend, user authentication, and MongoDB database integration. Make them work together.
 ```
 
 ```markdown
 ### Task Description
-Research quantum computing applications in cryptography and create a summary
+Research "AI in healthcare" from multiple angles: current applications, ethical concerns, regulatory challenges, and future possibilities. Synthesize findings into a comprehensive report.
 ```
 
 ```markdown
 ### Task Description
-Fix all the linting errors in this codebase and add proper type annotations
+Create a Python package for data visualization with 4 parallel workstreams: core plotting engine, statistical analysis tools, interactive widgets, and comprehensive documentation with examples.
 ```
 
 ```markdown
 ### Task Description
-Write test cases for the authentication module
+Debate the pros and cons of microservices vs monolithic architecture from different expert perspectives, then reach a consensus recommendation for a growing startup.
 ```
 
 #### Simple Examples with Task Type
 
-#### Simple Example 1: Quick Discussion
 ```markdown
 ### Task Type
 discussion
 
 ### Task Description
-Discuss "the unexpected fusion of knowledge from different fields" and compile a report
+Have 4 AI experts from different backgrounds (philosophy, neuroscience, computer science, ethics) discuss consciousness in artificial intelligence and find common ground
 ```
 
-#### Simple Example 2: Code Review
 ```markdown
 ### Task Type
 development
 
 ### Task Description
-Review the Python files in this directory and suggest performance improvements
+Refactor this legacy codebase by having 4 teams work simultaneously: one modernizing the frontend, one updating the backend API, one improving the database schema, and one writing tests
 ```
 
-#### Simple Example 3: Quick Research
 ```markdown
 ### Task Type
 research
 
 ### Task Description
-Find and summarize the latest best practices for React Server Components
+Investigate "sustainable technology" with parallel research on: renewable energy innovations, circular economy models, green computing practices, and environmental impact metrics
 ```
 
-#### Simple Example 4: Content Creation
 ```markdown
 ### Task Type
 content
 
 ### Task Description
-Write a beginner-friendly tutorial on Git branching strategies with examples
+Create a comprehensive course on machine learning: one team writes theory lessons, another creates coding exercises, a third develops real-world projects, and a fourth produces video script outlines
 ```
 
-#### Simple Example 5: Problem Solving
 ```markdown
 ### Task Type
 problem-solving
 
 ### Task Description
-Create a Python script that finds duplicate files in a directory tree and suggests which ones to delete
+Optimize this e-commerce platform's performance using 4 approaches: database query optimization, caching strategies, frontend bundle size reduction, and API response time improvements
 ```
 
 ### Tips for Writing Task Specifications
