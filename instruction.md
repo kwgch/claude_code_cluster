@@ -1,9 +1,38 @@
 # Claude Code Multi-Instance Management Manual
 
+## PROJECT CONFIGURATION
+
+### System Configuration
+- **Worker Panes**: 4
+- **Task Specification File**: `task.md`
+- **Output Directory**: `outputs/`
+- **Worker Instructions Directory**: Project root (worker[1-4]_instructions.md)
+- **Final Report Location**: `outputs/reports/final_report.md`
+
+### Task Execution Rules
+1. When asked to "follow instruction.md" or via `/task` command, act as MANAGER in the main pane
+2. Read task specification from `task.md`
+3. Create and manage 4 worker panes according to the task specification
+4. Use `outputs/` directory for new creation tasks, existing project structure for modifications
+5. Close worker panes automatically upon task completion unless specified otherwise
+
+### Worker Communication Protocol
+All workers must use this format for reports:
+```bash
+tmux send-keys -t $MAIN_PANE '[Worker{N}] Status: {message}' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter
+```
+
+### Output Guidelines
+- **New Projects**: Save to `outputs/{category}/`
+- **Existing Projects**: Follow project conventions
+- **Unspecified**: Default to `outputs/{category}/`
+
+Categories: development, research, content, reports, temp
+
 ## OPERATOR INSTRUCTIONS
 **When asked to "follow instruction.md", you will act as the MANAGER in the main pane. Your role is to:**
-1. **Read the USER TASK SPECIFICATION** at the bottom of this file
-2. **Set up the worker panes** (4 Claude instances)
+1. **Read the task specification** from task.md
+2. **Set up the worker panes** (4 Claude instances) 
 3. **Distribute tasks** to worker panes based on the specification
 4. **Monitor progress** and coordinate between workers
 5. **Collect and integrate results** from all workers
@@ -11,8 +40,6 @@
 7. **Close worker panes** and provide completion report when finished
 
 **You are NOT a worker - you are the orchestrator and supervisor of the entire operation.**
-
-**Default Behavior**: Unless instructed otherwise, automatically close all worker panes upon task completion and provide a final summary report.
 
 ## 1. Introduction
 
@@ -721,51 +748,13 @@ Progress reporting: tmux send-keys -t $MAIN_PANE '[PANE_NAME] Status: [STATUS_ME
 Completion report: tmux send-keys -t $MAIN_PANE '[PANE_NAME] Completed: [COMPLETION_DETAILS]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $[PANE_VAR] Enter
 ```
 
----
-
-## USER TASK SPECIFICATION
-
-### Task Type
-<!-- OPTIONAL: Select one: development / research / content / problem-solving / discussion -->
-<!-- Leave blank and Claude will infer from your task description -->
-[TASK_TYPE]
-
-### Task Description
-<!-- REQUIRED: Describe what you want to accomplish -->
-<!-- This can be as simple as one sentence or as detailed as needed -->
-[YOUR_TASK_DESCRIPTION]
-
-### Specific Requirements
-<!-- OPTIONAL: List any specific requirements, constraints, or preferences -->
-1. [REQUIREMENT_1]
-2. [REQUIREMENT_2]
-3. [REQUIREMENT_3]
-
-### Expected Outputs
-<!-- OPTIONAL: Describe the deliverables you expect -->
-1. [OUTPUT_1]
-2. [OUTPUT_2]
-3. [OUTPUT_3]
-
-### Task Distribution Plan
-<!-- OPTIONAL: Suggest how to divide work among panes, or leave blank for automatic distribution -->
-- Pane 1: [PANE1_TASK]
-- Pane 2: [PANE2_TASK]
-- Pane 3: [PANE3_TASK]
-- Pane 4: [PANE4_TASK]
-
-### Additional Context
-<!-- OPTIONAL: Any additional information that might be helpful -->
-[ADDITIONAL_CONTEXT]
-
----
 
 ## MANAGER EXECUTION CHECKLIST
 
 As the manager in the main pane, follow this workflow:
 
 ### Initial Setup
-1. [ ] Read and understand the user's task specification
+1. [ ] Read task specification from task.md
 2. [ ] Analyze task complexity and plan worker allocation
 3. [ ] Determine if this is a new creation task or modification of existing project
 4. [ ] Set up the tmux environment with 4 worker panes (Phase 1)

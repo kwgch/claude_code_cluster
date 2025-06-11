@@ -25,8 +25,8 @@ This system enables efficient parallel task execution using multiple Claude Code
 
 1. **Edit your task**
    ```bash
-   # Open instruction.md and fill in the USER TASK SPECIFICATION section
-   nano instruction.md  # or your preferred editor
+   # Open task.md and fill in your task details
+   nano task.md  # or your preferred editor
    ```
 
 2. **Run the launch script**
@@ -51,7 +51,7 @@ This system enables efficient parallel task execution using multiple Claude Code
 ### Option B: Manual Setup
 
 1. **Edit your task**
-   Open `instruction.md` and fill in the **USER TASK SPECIFICATION** section at the bottom with your specific task details.
+   Open `task.md` and fill in your task details.
 
 2. **Start tmux session**
    ```bash
@@ -94,10 +94,14 @@ Claude will automatically:
 ```
 /
 ├── README.md                      # This file
-├── instruction.md                 # Detailed task execution manual with templates
+├── task.md                        # Current task specification (user edits this)
+├── instruction.md                 # System configuration and execution manual
 ├── worker_instructions_template.md # Template for creating worker assignments
 ├── start.sh                       # Launch script for the system
 ├── .gitignore                     # Git ignore rules
+├── .claude/
+│   └── commands/
+│       └── task.md               # Custom /task command
 ├── worker[1-4]_instructions.md    # Created by manager for each task (not in git)
 └── outputs/                       # All task outputs go here (not in git)
     ├── development/               # Code, APIs, databases, tests

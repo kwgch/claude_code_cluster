@@ -34,28 +34,28 @@ echo -e "${GREEN}║           Claude Code Task Management System               
 echo -e "${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo
 
-# Check if instruction.md exists and has default values
-if [ -f "instruction.md" ]; then
-    # Check for default placeholder values in instruction.md
-    if grep -q "\[YOUR_TASK_DESCRIPTION\]" instruction.md; then
-        print_warning "instruction.md still contains default placeholder values!"
+# Check if task.md exists and has a task description
+if [ -f "task.md" ]; then
+    # Check if task description is empty or still has placeholder
+    if ! grep -A 2 "## Task Description" task.md | grep -v "^#" | grep -v "^<" | grep -v "^$" | grep -q "[a-zA-Z]"; then
+        print_warning "task.md does not contain a task description!"
         echo
-        echo -e "${YELLOW}The USER TASK SPECIFICATION section has not been filled out.${NC}"
-        echo -e "${YELLOW}Please edit instruction.md and specify your task before continuing.${NC}"
+        echo -e "${YELLOW}The task specification has not been filled out.${NC}"
+        echo -e "${YELLOW}Please edit task.md and specify your task before continuing.${NC}"
         echo
         echo -e "${BLUE}Quick tip:${NC} You can use a simple one-line task description like:"
         echo -e "  ${GREEN}Build a REST API for user management${NC}"
         echo -e "  ${GREEN}Research AI applications in healthcare and create a report${NC}"
         echo
-        read -p "Do you want to continue with the default template? (y/n): " -n 1 -r
+        read -p "Do you want to continue without a task? (y/n): " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            print_status "Please edit instruction.md first, then run this script again."
+            print_status "Please edit task.md first, then run this script again."
             exit 1
         fi
     fi
 else
-    print_error "instruction.md not found in current directory!"
+    print_error "task.md not found in current directory!"
     print_status "Please ensure you're in the correct project directory."
     exit 1
 fi
@@ -127,8 +127,8 @@ echo -e "• Detach session:    ${YELLOW}Ctrl+b d${NC}"
 echo -e "• Emergency stop:    ${YELLOW}tmux kill-server${NC} (kills ALL tmux sessions)"
 echo
 echo -e "${BLUE}Task Setup:${NC}"
-echo -e "• Edit ${YELLOW}instruction.md${NC} to specify your task before starting"
-echo -e "• Or use the simple format: just write a task description"
+echo -e "• Edit ${YELLOW}task.md${NC} to specify your task (already done if you see this)"
+echo -e "• Claude will read instructions and manage the multi-instance workflow"
 echo
 
 read -p "Press Enter to attach to the session..."

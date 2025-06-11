@@ -1,4 +1,5 @@
-# Worker instruction files (generated per task)
+# Task-specific files
+task.md
 worker1_instructions.md
 worker2_instructions.md
 worker3_instructions.md
