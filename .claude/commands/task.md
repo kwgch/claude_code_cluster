@@ -1,1 +1,1 @@
-follow instruction_tmux.md
+follow task.md

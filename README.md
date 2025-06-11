@@ -1,500 +1,290 @@
-# Multi-Instance Claude Code Task Management System
+# Claude Code Parallel Execution Framework
 
-## Overview
+A framework that enables **Claude Code to dynamically spawn multiple instances to work in parallel**, dramatically improving efficiency for complex projects.
 
-This system enables efficient parallel task execution using multiple Claude Code instances managed through tmux. It supports various task types including development, research, content creation, problem-solving, and collaborative discussions, with built-in coordination and monitoring capabilities.
+## 🚀 Quick Start
 
-## Key Features
-
-- **Multi-Agent Coordination**: Run up to 5 Claude Code instances in parallel
-- **Versatile Task Support**: Handle development, research, content creation, problem-solving, and discussions
-- **Automated Task Distribution**: Smart workload allocation across instances
-- **Real-time Progress Tracking**: Built-in reporting and monitoring system
-- **Resource Management**: Token usage monitoring and optimization
-- **Pipeline Processing**: Support for dependent and sequential tasks
-
-## Prerequisites
-
-- tmux (Terminal Multiplexer)
-- Claude Code CLI installed and configured
-- Unix-like environment (Linux/macOS/WSL)
-
-## Quick Start
-
-Choose your preferred mode:
-
-### Mode 1: tmux Mode (Visual Panes)
-Best for: Interactive monitoring, local development, visual feedback
-
-1. **Edit your task**
-   ```bash
-   nano task.md  # Edit task specification
-   ```
-
-2. **Run tmux launcher**
-   ```bash
-   ./start.sh
-   ```
-
-3. **Execute your task**
-   ```
-   /task
-   ```
-
-### Mode 2: Process Mode (Background Execution)
-Best for: Remote/SSH sessions, resource-constrained environments, automated workflows
-
-1. **Edit your task**
-   ```bash
-   nano task.md  # Edit task specification
-   ```
-
-2. **Run process launcher**
-   ```bash
-   ./start-process.sh
-   ```
-
-3. **Execute your task**
-   ```
-   /task-process
-   ```
-
-4. **Monitor progress**
-   ```bash
-   # View logs
-   tail -f logs/worker*.log
-   
-   # Check status
-   cat comm/worker*_status.txt
-   ```
-
-### What Happens Next
-
-**tmux Mode:**
-- Visual panes show real-time progress
-- Interactive monitoring and intervention possible
-- All workers visible simultaneously
-
-**Process Mode:**
-- Workers run silently in background
-- Progress tracked via log files
-- No tmux required
-- Better for automated/remote execution
-
-Both modes will:
-- Read your task specification
-- Set up multi-instance environment (4 workers)
-- Distribute work across instances
-- Monitor and coordinate progress
-- Generate results and reports
-- Clean up when complete
-
-## Project Structure
-
-```
-/
-├── README.md                      # This file
-├── task.md                        # Current task specification (user edits this)
-├── instruction_tmux.md            # tmux mode execution manual
-├── instruction_process.md         # Process mode execution manual
-├── worker_instructions_template.md # Template for creating worker assignments
-├── start.sh                       # tmux mode launcher
-├── start-process.sh               # Process mode launcher
-├── .gitignore                     # Git ignore rules
-├── .claude/
-│   └── commands/
-│       ├── task.md               # tmux mode command
-│       └── task-process.md       # Process mode command
-├── worker[1-4]_instructions.md    # Created by manager for each task (not in git)
-├── outputs/                       # All task outputs go here (not in git)
-│   ├── development/              # Code, APIs, databases, tests
-│   ├── research/                 # Research findings, data, analysis
-│   ├── content/                  # Articles, documentation, media
-│   ├── reports/                  # Final reports, summaries
-│   └── temp/                     # Temporary work files
-├── logs/                          # Process mode: worker logs (not in git)
-└── comm/                          # Process mode: status files (not in git)
-```
-
-## Supported Task Types
-
-### 1. Development Tasks
-- **Backend API Development**: RESTful APIs, GraphQL, microservices
-- **Frontend Implementation**: React, Vue, Angular components
-- **Database Design**: Schema design, optimization, migrations
-- **Testing**: Unit tests, integration tests, E2E tests
-
-### 2. Research & Analysis Tasks
-- **Literature Review**: Academic papers, technical documentation
-- **Data Collection**: Web scraping, API integration, surveys
-- **Statistical Analysis**: Data processing, visualization, insights
-- **Report Generation**: Findings compilation, recommendations
-
-### 3. Content Creation Tasks
-- **Research & Fact-checking**: Source verification, accuracy checks
-- **Content Drafting**: Articles, documentation, tutorials
-- **Supporting Materials**: Code examples, diagrams, images
-- **Editing & Formatting**: Proofreading, style consistency
-
-### 4. Problem-Solving Tasks
-- **Algorithm Development**: Multiple approach implementations
-- **Performance Testing**: Benchmarking, optimization
-- **Solution Comparison**: Trade-off analysis, recommendations
-- **Integration**: Combining best approaches
-
-### 5. Collaborative Discussions
-- **Multi-perspective Analysis**: Different viewpoints on topics
-- **Brainstorming**: Idea generation and evaluation
-- **Decision Making**: Pros/cons analysis, consensus building
-- **Knowledge Synthesis**: Combining insights from all agents
-
-## Usage Examples
-
-### Development Task Example
 ```bash
-# Replace placeholders with your specific requirements
-tmux send-keys -t $PANE1 "You are pane1. Create a REST API for user management. Use Express.js. Save to api/users.js. Report: tmux send-keys -t $MAIN_PANE '[pane1] API created' Enter" Enter
+# 1. Setup (auto-installs dependencies)
+./setup_node_runner.sh
+
+# 2. Run with your instruction files
+node parallel_claude_runner.js worker1_instructions.md worker2_instructions.md
+
+# 3. Or run with multiple workers
+node parallel_claude_runner.js worker{1..6}_instructions.md
 ```
 
-### Research Task Example
+## 📋 Requirements
+
+- **Node.js** v14+ (recommended v16+)
+- **Claude CLI** installed and accessible
+- **Unix-like OS** (Linux, macOS, or WSL for Windows)
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐
+│  Manager Claude │ (You)
+└────────┬────────┘
+         │ Creates instructions & manages processes
+         │
+    ┌────┴────┬────────┬────────┐
+    ▼         ▼        ▼        ▼
+┌─────────┐┌─────────┐┌─────────┐┌─────────┐
+│Worker 1 ││Worker 2 ││Worker 3 ││Worker N │
+└─────────┘└─────────┘└─────────┘└─────────┘
+    │         │        │        │
+    └─────────┴────────┴────────┘
+              │
+         File-based communication
+         (comm/*.txt)
+```
+
+## 💡 Core Value Proposition
+
+1. **Dynamic Scaling**: Automatically launches optimal number of Claude instances based on task complexity
+2. **True Parallel Processing**: Each instance works independently while coordinating through files
+3. **Efficiency Maximization**: Reduces complex project completion time dramatically
+
+### Example: Full-Stack Application
+- **Traditional**: 1 Claude Code works sequentially → 6 hours
+- **Parallelized**: 6 Claude Codes work simultaneously → 1 hour
+
+## 🔧 Technical Implementation
+
+### The Problem
+Claude CLI requires an interactive terminal (TTY) and fails in background processes with:
+```
+Error: Raw mode is not supported on the current process.stdin
+```
+
+### The Solution
+Using `node-pty` library to provide pseudo-terminal environment for each Claude instance:
+
+```javascript
+const ptyProcess = pty.spawn('claude', [instructions], {
+    name: 'xterm-color',
+    env: { TERM: 'xterm-256color' }
+});
+```
+
+## 📂 Project Structure
+
+```
+/workspaces/cc_parallel/
+├── parallel_claude_runner.js    # Main execution script
+├── setup_node_runner.sh        # Setup script
+├── start.sh                    # Simple Claude launcher
+├── task.md                     # Task definition (sample)
+├── worker*_instructions.md     # Worker instructions
+├── logs/                       # Worker execution logs
+├── comm/                       # Inter-worker communication
+└── outputs/                    # Task deliverables
+```
+
+## 🎯 Usage Patterns
+
+### 1. Large-Scale Development
 ```bash
-# Parallel research across multiple sources
-tmux send-keys -t $PANE1 "You are pane1. Research machine learning trends for 2024. Find 10 sources. Save to ml_trends.md. Report findings." Enter
+Worker 1: Backend API development
+Worker 2: Frontend UI implementation  
+Worker 3: Authentication system
+Worker 4: Real-time features
+Worker 5: Test suite creation
+Worker 6: Dockerization and documentation
 ```
 
-### Pipeline Processing Example
+### 2. Research & Analysis
 ```bash
-# Sequential task execution with dependencies
-# Pane1: Data collection → Pane2: Processing → Pane3: Analysis → Pane4: Visualization
-# See instruction.md Phase 3 for coordination patterns
+Worker 1: Technical research and prototyping
+Worker 2: Competitive analysis
+Worker 3: Security evaluation
+Worker 4: Performance optimization
 ```
 
-## Best Practices
-
-1. **Resource Management**
-   - Monitor token usage with `ccusage` command
-   - Clear context when exceeding 50k tokens
-   - Use batch operations for efficiency
-
-2. **Error Handling**
-   - Implement timeout mechanisms for long-running tasks
-   - Use health checks before critical operations
-   - Maintain fallback strategies
-
-3. **Task Organization**
-   - Use clear naming conventions with pane IDs
-   - Implement structured reporting formats
-   - Track task dependencies explicitly
-
-## Troubleshooting
-
-### Emergency Stop
+### 3. Content Generation
 ```bash
-tmux kill-server
+Worker 1: API reference generation
+Worker 2: Tutorial creation
+Worker 3: Sample code development
+Worker 4: Integration and review
 ```
-**WARNING**: This will terminate ALL tmux sessions and their processes immediately. Use this when you need to stop everything quickly.
+
+## 📝 Creating Worker Instructions
+
+### Using the Template
+Create `worker[N]_instructions.md` files with:
+
+```markdown
+# Worker [NUMBER] Instructions
+
+## Your Assignment
+[Specific task description]
+
+## Requirements
+1. [Requirement 1]
+2. [Requirement 2]
+3. [Requirement 3]
+
+## Deliverables
+- [Deliverable 1]
+- [Deliverable 2]
+
+## Communication Protocol
+- Write status updates to: comm/worker[NUMBER]_status.txt
+- Format: echo '[Worker[NUMBER]] Status: Your message' >> comm/worker[NUMBER]_status.txt
+- Mark completion with: COMPLETED: when done
+
+## Output Location
+Save all work to: outputs/[category]/
+```
+
+## 📊 Monitoring
+
+Real-time monitoring displays:
+```
+=== PARALLEL CLAUDE WORKER MONITOR ===
+Time: 2025-06-11 15:30:00
+
+🟢 Worker 1 (PID: 12345, Runtime: 120s)
+   Status: Implementing backend API...
+
+🟢 Worker 2 (PID: 12346, Runtime: 118s)
+   Status: Creating React components...
+
+Progress: 2/6 workers completed
+```
+
+## 🛠️ Setup Details
+
+### Automatic Setup
+```bash
+chmod +x setup_node_runner.sh
+./setup_node_runner.sh
+```
+
+### Manual Setup
+```bash
+# Initialize Node.js project
+npm init -y
+
+# Install dependencies
+npm install node-pty
+
+# Create directories
+mkdir -p logs comm outputs
+
+# Make scripts executable
+chmod +x parallel_claude_runner.js setup_node_runner.sh start.sh
+```
+
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **Pane Not Responding**
-   - Send Ctrl+C: `tmux send-keys -t $PANE C-c`
-   - Clear and restart: `/clear` command
+1. **"Raw mode is not supported" error**
+   - ✅ Already solved with node-pty implementation
 
-2. **Memory Issues**
-   - Clear all panes simultaneously
-   - Check system resources with `htop`
+2. **"claude: command not found"**
+   ```bash
+   # Check installation
+   which claude
+   
+   # If not found, install Claude CLI
+   npm install -g @anthropic-ai/claude-code
+   ```
 
-3. **Synchronization Problems**
-   - Implement barrier synchronization (see instruction.md section 10.3)
-   - Use completion markers in output
+3. **node-pty build errors**
+   ```bash
+   # Ubuntu/Debian
+   sudo apt-get install build-essential
+   
+   # macOS
+   xcode-select --install
+   ```
 
-## Security Considerations
+4. **Permission errors**
+   ```bash
+   chmod +x parallel_claude_runner.js
+   chmod +x setup_node_runner.sh
+   ```
 
-- The `--dangerously-skip-permissions` flag should only be used in development environments
-- Avoid processing sensitive information across multiple panes
-- Regularly clean up log files and temporary data
+## ⚙️ Environment Variables (Optional)
 
-## Advanced Features
-
-### Token Management
 ```bash
-# Check token usage across all panes
-for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
-    tmux send-keys -t $pane "ccusage" Enter
-done
+# Custom Claude CLI path
+export CLAUDE_CLI_PATH="/custom/path/to/claude"
+
+# Limit maximum workers
+export MAX_CLAUDE_WORKERS=8
+
+# Enable debug logging
+export DEBUG=true
 ```
 
-### Health Monitoring
-```bash
-# Monitor pane status and detect errors
-health_check()  # Function available in instruction.md
+## 🎯 Best Practices
+
+1. **Start Small**: Test with 2 workers before scaling up
+2. **Resource Management**: Each worker uses ~1-2GB memory
+3. **Task Division**: Break complex tasks into independent subtasks
+4. **Communication**: Use status files for coordination
+5. **Output Organization**: Keep deliverables in structured directories
+
+## 🚀 Advanced Usage
+
+### Dynamic Task Distribution
+Define your main task in `task.md` and let the system determine optimal worker count:
+
+```markdown
+# Task Specification
+
+### Task Type
+development
+
+### Task Description
+Create a full-stack todo application
+
+### Specific Requirements
+1. Backend: Node.js with Express
+2. Frontend: React with TypeScript
+3. Real-time updates using WebSocket
+4. Docker configuration
+5. Comprehensive tests
+
+### Task Distribution Plan
+- Pane 1: Backend API development
+- Pane 2: Frontend UI implementation
+- Pane 3: Authentication and real-time
+- Pane 4: Testing and deployment
 ```
 
-### Results Collection
-```bash
-# Automatically collect outputs from all panes
-collect_results()  # Creates results/ directory with all outputs
-```
+## 📈 Performance Metrics
 
-## Contributing
+- **Parallel Speedup**: Up to N× faster with N workers
+- **Resource Usage**: ~2GB memory per worker
+- **Optimal Workers**: 2-8 depending on system specs
+- **Communication Overhead**: Minimal (file-based)
 
-When contributing to this project:
-1. Test multi-instance coordination thoroughly
-2. Document any new task patterns or utilities
-3. Ensure backward compatibility with existing workflows
-4. Add examples for new task types
+## 🔒 Security Considerations
 
-## References
+- Workers operate in isolated processes
+- Use `--dangerously-skip-permissions` flag cautiously
+- Consider containerization for production use
+- Monitor resource usage to prevent system overload
 
-- [Task Execution Manual](./instruction.md)
-- [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)
+## 🤝 Contributing
+
+This project is designed to be minimal and efficient. When contributing:
+1. Keep the codebase simple and maintainable
+2. Document any new features clearly
+3. Test with multiple worker configurations
+4. Ensure backward compatibility
+
+## 📜 License
+
+This project is open source. Use it to maximize your Claude Code productivity!
 
 ---
 
-## Appendix: Task Specification Examples
-
-### Example 1: Web Application Development
-
-```markdown
-### Task Type
-development
-
-### Task Description
-Create a full-stack todo application with user authentication, real-time updates, and a modern UI
-
-### Specific Requirements
-1. Backend: Node.js with Express, JWT authentication, PostgreSQL database
-2. Frontend: React with TypeScript, Material-UI components, responsive design
-3. Real-time updates using WebSocket (Socket.io)
-4. Docker configuration for easy deployment
-5. Comprehensive test coverage (unit and integration tests)
-
-### Expected Outputs
-1. Backend API code in `backend/` directory
-2. Frontend application in `frontend/` directory
-3. Database schema and migration files
-4. Docker Compose configuration
-5. README with setup instructions
-
-### Task Distribution Plan
-- Pane 1: Backend API development and database design
-- Pane 2: Frontend UI implementation and state management
-- Pane 3: Authentication system and WebSocket integration
-- Pane 4: Testing, Docker configuration, and documentation
-
-### Additional Context
-Priority is on clean, maintainable code with proper error handling. Follow REST API best practices and React hooks patterns.
-```
-
-### Example 2: Market Research Report
-
-```markdown
-### Task Type
-research
-
-### Task Description
-Analyze the current state of AI-powered code generation tools market, focusing on competitive landscape, pricing models, and future trends
-
-### Specific Requirements
-1. Research at least 10 major players in the market
-2. Compare features, pricing, and target audiences
-3. Analyze market trends for the next 2-3 years
-4. Include data visualizations (charts/graphs)
-5. Provide actionable recommendations for a startup entering this space
-
-### Expected Outputs
-1. Comprehensive market analysis report (15-20 pages)
-2. Executive summary (2 pages)
-3. Competitor comparison matrix
-4. Market trend visualizations
-5. SWOT analysis for new market entrants
-
-### Task Distribution Plan
-- Pane 1: Research major players and collect feature/pricing data
-- Pane 2: Analyze market trends and future predictions
-- Pane 3: Create visualizations and comparison matrices
-- Pane 4: Write report sections and executive summary
-
-### Additional Context
-Focus on tools similar to GitHub Copilot, Cursor, and Tabnine. Include both established companies and promising startups.
-```
-
-### Example 3: Technical Blog Series
-
-```markdown
-### Task Type
-content
-
-### Task Description
-Create a 5-part blog series explaining microservices architecture patterns for beginners, with practical examples
-
-### Specific Requirements
-1. Each article should be 1500-2000 words
-2. Include code examples in Node.js and Python
-3. Create diagrams for each architectural pattern
-4. Write in an engaging, beginner-friendly tone
-5. Include real-world use cases and best practices
-
-### Expected Outputs
-1. Five blog posts in Markdown format
-2. Code examples repository with working demos
-3. Architecture diagrams (using mermaid or similar)
-4. Series outline and publishing schedule
-5. Social media snippets for promotion
-
-### Task Distribution Plan
-- Pane 1: Research and outline creation for all articles
-- Pane 2: Write main content for articles 1-3
-- Pane 3: Write main content for articles 4-5 and create code examples
-- Pane 4: Create diagrams, review/edit all content, prepare social media snippets
-
-### Additional Context
-Target audience: Junior developers with 1-2 years experience. Avoid overly technical jargon. Each article should build upon the previous one.
-```
-
-### Example 4: Algorithm Optimization Challenge
-
-```markdown
-### Task Type
-problem-solving
-
-### Task Description
-Optimize a large-scale graph traversal algorithm for social network analysis that currently takes too long on datasets with millions of nodes
-
-### Specific Requirements
-1. Current algorithm has O(n²) complexity - need to reduce to O(n log n) or better
-2. Must handle graphs with 10M+ nodes and 100M+ edges
-3. Implement in both Python and C++ for comparison
-4. Memory usage should not exceed 16GB
-5. Maintain accuracy of original algorithm (tolerance: 0.001%)
-
-### Expected Outputs
-1. Optimized algorithm implementations (Python and C++)
-2. Performance benchmark results and comparisons
-3. Memory usage analysis
-4. Scalability test results
-5. Technical documentation explaining optimizations
-
-### Task Distribution Plan
-- Pane 1: Analyze current algorithm and design optimization approach A
-- Pane 2: Design alternative optimization approach B
-- Pane 3: Implement both approaches and create benchmarks
-- Pane 4: Test scalability, accuracy, and create documentation
-
-### Additional Context
-The algorithm is used for community detection in social networks. Current implementation uses adjacency matrix representation. Consider using sparse matrix techniques or graph streaming algorithms.
-```
-
-### Example 5: Technology Stack Evaluation
-
-```markdown
-### Task Type
-discussion
-
-### Task Description
-Evaluate and recommend the best technology stack for a new fintech startup's mobile-first banking application
-
-### Specific Requirements
-1. Consider security, scalability, and regulatory compliance
-2. Evaluate both native and cross-platform mobile options
-3. Include cost analysis for different stack options
-4. Consider developer availability and ecosystem maturity
-5. Provide migration path from MVP to enterprise scale
-
-### Expected Outputs
-1. Technology stack comparison report
-2. Detailed pros/cons for each option
-3. Cost projection for 3-year timeline
-4. Risk assessment matrix
-5. Final recommendation with justification
-
-### Task Distribution Plan
-- Pane 1: Evaluate backend technologies (focus on security and compliance)
-- Pane 2: Analyze mobile development options (native vs cross-platform)
-- Pane 3: Research infrastructure and DevOps considerations
-- Pane 4: Cost analysis and risk assessment
-
-### Additional Context
-The startup expects 100K users in year 1, scaling to 5M by year 3. Must comply with PCI-DSS and regional banking regulations. Team currently has 5 developers with varied backgrounds.
-```
-
-### Simple Task Examples
-
-You don't always need to fill out every field. Here are some minimal examples that work just as well:
-
-#### Ultra-Simple Examples (Description Only)
-
-```markdown
-### Task Description
-Analyze this codebase from 4 perspectives: security vulnerabilities, performance bottlenecks, code quality issues, and architectural improvements. Create a unified improvement plan.
-```
-
-```markdown
-### Task Description
-Build a real-time chat application with separate teams handling: WebSocket server, React frontend, user authentication, and MongoDB database integration. Make them work together.
-```
-
-```markdown
-### Task Description
-Research "AI in healthcare" from multiple angles: current applications, ethical concerns, regulatory challenges, and future possibilities. Synthesize findings into a comprehensive report.
-```
-
-```markdown
-### Task Description
-Create a Python package for data visualization with 4 parallel workstreams: core plotting engine, statistical analysis tools, interactive widgets, and comprehensive documentation with examples.
-```
-
-```markdown
-### Task Description
-Debate the pros and cons of microservices vs monolithic architecture from different expert perspectives, then reach a consensus recommendation for a growing startup.
-```
-
-#### Simple Examples with Task Type
-
-```markdown
-### Task Type
-discussion
-
-### Task Description
-Have 4 AI experts from different backgrounds (philosophy, neuroscience, computer science, ethics) discuss consciousness in artificial intelligence and find common ground
-```
-
-```markdown
-### Task Type
-development
-
-### Task Description
-Refactor this legacy codebase by having 4 teams work simultaneously: one modernizing the frontend, one updating the backend API, one improving the database schema, and one writing tests
-```
-
-```markdown
-### Task Type
-research
-
-### Task Description
-Investigate "sustainable technology" with parallel research on: renewable energy innovations, circular economy models, green computing practices, and environmental impact metrics
-```
-
-```markdown
-### Task Type
-content
-
-### Task Description
-Create a comprehensive course on machine learning: one team writes theory lessons, another creates coding exercises, a third develops real-world projects, and a fourth produces video script outlines
-```
-
-```markdown
-### Task Type
-problem-solving
-
-### Task Description
-Optimize this e-commerce platform's performance using 4 approaches: database query optimization, caching strategies, frontend bundle size reduction, and API response time improvements
-```
-
-### Tips for Writing Task Specifications
-
-1. **Start Simple**: You can begin with just the task type and description
-2. **Add Detail as Needed**: Include requirements and outputs only when necessary
-3. **Let Claude Decide**: If you don't specify task distribution, Claude will handle it automatically
-4. **Be Specific When It Matters**: Add details for complex tasks or specific requirements
-5. **Use Natural Language**: Write tasks as you would explain them to a colleague
+💡 **Pro Tip**: Start with 2-4 workers for most tasks. Scale up only when you understand the resource requirements and task dependencies.

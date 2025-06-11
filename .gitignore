@@ -1,5 +1,4 @@
 # Task-specific files
-task.md
 worker*_instructions.md
 worker*_launch.sh
 test_worker*_instructions.md
