@@ -1,135 +1,135 @@
-# Claude Code 並列実行環境 セットアップ要件
+# Claude Code Parallel Execution Environment - Setup Requirements
 
-## 必須要件
+## Required Components
 
-### 1. システム要件
-- **Node.js**: v14.0.0 以上（推奨: v16以上）
-- **npm**: v6.0.0 以上
-- **OS**: Linux, macOS, Windows (WSL推奨)
-- **Claude CLI**: インストール済み（`claude` コマンドが使用可能）
+### 1. System Requirements
+- **Node.js**: v14.0.0 or higher (recommended: v16+)
+- **npm**: v6.0.0 or higher
+- **OS**: Linux, macOS, Windows (WSL recommended)
+- **Claude CLI**: Installed (`claude` command available)
 
-### 2. 必要なパッケージ
+### 2. Required Packages
 ```json
 {
   "dependencies": {
-    "node-pty": "^1.0.0"  // PTY（擬似端末）サポート
+    "node-pty": "^1.0.0"  // PTY (pseudo-terminal) support
   }
 }
 ```
 
-### 3. ディレクトリ構造
+### 3. Directory Structure
 ```
 project/
-├── package.json                    # Node.js プロジェクト設定
-├── parallel_claude_runner.js       # メイン実行スクリプト
-├── setup_node_runner.sh           # セットアップスクリプト
-├── worker[N]_instructions.md      # 各ワーカーへの指示書
-├── logs/                          # ワーカーログ出力
-├── comm/                          # ワーカー間通信ファイル
-└── outputs/                       # 成果物出力ディレクトリ
+├── package.json                    # Node.js project configuration
+├── parallel_claude_runner.js       # Main execution script
+├── setup_node_runner.sh           # Setup script
+├── worker[N]_instructions.md      # Worker instruction files
+├── logs/                          # Worker log output
+├── comm/                          # Inter-worker communication files
+└── outputs/                       # Deliverables output directory
 ```
 
-## セットアップ手順
+## Setup Instructions
 
-### 1. クイックセットアップ（推奨）
+### 1. Quick Setup (Recommended)
 ```bash
-# セットアップスクリプトを実行
+# Run the setup script
 chmod +x setup_node_runner.sh
 ./setup_node_runner.sh
 ```
 
-### 2. 手動セットアップ
+### 2. Manual Setup
 ```bash
-# package.json が存在しない場合
+# If package.json doesn't exist
 npm init -y
 
-# node-pty をインストール
+# Install node-pty
 npm install node-pty
 
-# スクリプトに実行権限を付与
+# Grant execution permissions
 chmod +x parallel_claude_runner.js
 
-# 必要なディレクトリを作成
+# Create required directories
 mkdir -p logs comm outputs/{development,research,content,reports,temp}
 ```
 
-## 使用方法
+## Usage
 
-### 基本的な実行
+### Basic Execution
 ```bash
-# 2つのワーカーで実行
+# Run with 2 workers
 node parallel_claude_runner.js worker1_instructions.md worker2_instructions.md
 
-# 6つのワーカーで実行
+# Run with 6 workers
 node parallel_claude_runner.js worker{1..6}_instructions.md
 ```
 
-### テスト実行
+### Test Execution
 ```bash
-# テスト用の簡単なタスクで動作確認
+# Verify functionality with simple test tasks
 node parallel_claude_runner.js test_worker1_instructions.md test_worker2_instructions.md
 ```
 
-## トラブルシューティング
+## Troubleshooting
 
-### node-pty のビルドエラー
+### node-pty Build Errors
 ```bash
-# ビルドツールが必要な場合（Ubuntu/Debian）
+# If build tools are needed (Ubuntu/Debian)
 sudo apt-get install build-essential
 
-# macOS の場合
+# For macOS
 xcode-select --install
 ```
 
-### Claude CLI が見つからない
+### Claude CLI Not Found
 ```bash
-# Claude CLI がインストールされているか確認
+# Check if Claude CLI is installed
 which claude
 
-# パスが通っていない場合は追加
+# Add to PATH if not found
 export PATH="$PATH:/path/to/claude"
 ```
 
-### 権限エラー
+### Permission Errors
 ```bash
-# 実行権限を付与
+# Grant execution permissions
 chmod +x parallel_claude_runner.js
 chmod +x setup_node_runner.sh
 ```
 
-## 環境変数（オプション）
+## Environment Variables (Optional)
 
 ```bash
-# Claude CLI のカスタムパス
+# Custom Claude CLI path
 export CLAUDE_CLI_PATH="/custom/path/to/claude"
 
-# 最大ワーカー数の制限
+# Limit maximum workers
 export MAX_CLAUDE_WORKERS=8
 
-# ログレベル
+# Log level
 export DEBUG=true
 ```
 
-## 確認事項
+## Verification
 
-### ✅ セットアップ完了チェックリスト
-- [ ] Node.js v14+ がインストールされている
-- [ ] Claude CLI が利用可能（`claude --help` が動作）
-- [ ] `npm install` が成功
-- [ ] `node-pty` がインストールされている
-- [ ] 必要なディレクトリが作成されている
-- [ ] スクリプトに実行権限がある
+### ✅ Setup Completion Checklist
+- [ ] Node.js v14+ installed
+- [ ] Claude CLI available (`claude --help` works)
+- [ ] `npm install` successful
+- [ ] `node-pty` installed
+- [ ] Required directories created
+- [ ] Scripts have execution permissions
 
-### ✅ 動作確認
-- [ ] `node test_pty_runner.js` でTTYテストが成功
-- [ ] テストワーカーが正常に起動・終了
-- [ ] ログファイルが生成される
-- [ ] ステータスファイルが更新される
+### ✅ Functionality Check
+- [ ] `node test_pty_runner.js` TTY test passes
+- [ ] Test workers start and stop properly
+- [ ] Log files are generated
+- [ ] Status files are updated
 
-## 次のステップ
+## Next Steps
 
-1. **ワーカー指示書の作成**: `worker[N]_instructions.md` を作成
-2. **タスクの定義**: `task.md` でメインタスクを定義
-3. **並列実行**: `node parallel_claude_runner.js` で実行
-4. **モニタリング**: リアルタイムで進捗を確認
-5. **結果の収集**: `outputs/` ディレクトリから成果物を取得
+1. **Create Worker Instructions**: Create `worker[N]_instructions.md` files
+2. **Define Task**: Define main task in `task.md`
+3. **Execute in Parallel**: Run with `node parallel_claude_runner.js`
+4. **Monitor Progress**: Watch real-time progress
+5. **Collect Results**: Get deliverables from `outputs/` directory

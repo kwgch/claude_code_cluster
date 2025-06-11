@@ -1,22 +1,22 @@
-# Claude Code 並列実行プロジェクト
+# Claude Code Parallel Execution Project
 
-## プロジェクトの本質
+## Project Essence
 
-このプロジェクトは、**Claude Codeが必要に応じて必要なだけサブプロセスを生成し、複数のClaude Codeインスタンスを立ち上げ、作業を並列で行い、効率化する**ためのフレームワークです。
+This project is a framework that enables **Claude Code to dynamically spawn as many subprocesses as needed, launching multiple Claude Code instances to work in parallel and maximize efficiency**.
 
-### 核心的な価値提案
+### Core Value Proposition
 
-1. **動的スケーリング**: タスクの複雑さとシステムリソースに基づいて、最適な数のClaude Codeインスタンスを自動的に起動
-2. **真の並列処理**: 各インスタンスが独立して作業を進め、ファイルベースの通信で協調
-3. **効率の最大化**: 従来の逐次処理から並列処理へ移行し、複雑なプロジェクトの完了時間を大幅に短縮
+1. **Dynamic Scaling**: Automatically launches the optimal number of Claude Code instances based on task complexity and system resources
+2. **True Parallel Processing**: Each instance works independently while coordinating through file-based communication
+3. **Efficiency Maximization**: Transitions from traditional sequential processing to parallel processing, dramatically reducing completion time for complex projects
 
-## アーキテクチャ概要
+## Architecture Overview
 
 ```
 ┌─────────────────┐
-│  Manager Claude │ （あなた）
+│  Manager Claude │ (You)
 └────────┬────────┘
-         │ 指示書作成・プロセス管理
+         │ Creates instructions & manages processes
          │
     ┌────┴────┬────────┬────────┐
     ▼         ▼        ▼        ▼
@@ -27,118 +27,118 @@
     │         │        │        │
     └─────────┴────────┴────────┘
               │
-         ファイルベース通信
+         File-based communication
          (comm/*.txt)
 ```
 
-## 技術的実装
+## Technical Implementation
 
-### TTY制限の解決
-- **問題**: Claude CLIは対話的端末(TTY)を必要とし、通常のバックグラウンドプロセスでは動作しない
-- **解決**: `node-pty`ライブラリを使用して擬似端末環境を提供
+### Solving TTY Limitations
+- **Problem**: Claude CLI requires an interactive terminal (TTY) and doesn't work in standard background processes
+- **Solution**: Using `node-pty` library to provide pseudo-terminal environment
 
-### 並列実行の仕組み
+### Parallel Execution Mechanism
 ```javascript
-// 各ワーカーに対してPTY環境でClaude CLIを起動
+// Launch Claude CLI with PTY environment for each worker
 const ptyProcess = pty.spawn('claude', [instructions], {
     name: 'xterm-color',
     env: { TERM: 'xterm-256color' }
 });
 ```
 
-## 利用パターン
+## Usage Patterns
 
-### 1. 大規模開発プロジェクト
+### 1. Large-Scale Development Projects
 ```bash
-# 6つのワーカーでフルスタックアプリケーションを構築
-Worker 1: バックエンドAPI開発
-Worker 2: フロントエンドUI実装
-Worker 3: 認証システム構築
-Worker 4: リアルタイム機能実装
-Worker 5: テストスイート作成
-Worker 6: Docker化とドキュメント作成
+# Building a full-stack application with 6 workers
+Worker 1: Backend API development
+Worker 2: Frontend UI implementation
+Worker 3: Authentication system
+Worker 4: Real-time features
+Worker 5: Test suite creation
+Worker 6: Dockerization and documentation
 ```
 
-### 2. 研究・分析タスク
+### 2. Research & Analysis Tasks
 ```bash
-# 4つのワーカーで並列調査
-Worker 1: 技術調査とプロトタイプ
-Worker 2: 競合分析とベンチマーク
-Worker 3: セキュリティ評価
-Worker 4: パフォーマンス最適化
+# Parallel investigation with 4 workers
+Worker 1: Technical research and prototyping
+Worker 2: Competitive analysis and benchmarking
+Worker 3: Security evaluation
+Worker 4: Performance optimization
 ```
 
-### 3. コンテンツ生成
+### 3. Content Generation
 ```bash
-# 複数ワーカーで大規模ドキュメント作成
-Worker 1: API リファレンス生成
-Worker 2: チュートリアル作成
-Worker 3: サンプルコード開発
-Worker 4: 統合とレビュー
+# Large-scale documentation with multiple workers
+Worker 1: API reference generation
+Worker 2: Tutorial creation
+Worker 3: Sample code development
+Worker 4: Integration and review
 ```
 
-## 実行方法
+## Execution Method
 
-### 基本コマンド
+### Basic Commands
 ```bash
-# セットアップ
+# Setup
 ./setup_node_runner.sh
 
-# 並列実行
+# Parallel execution
 node parallel_claude_runner.js worker1_instructions.md worker2_instructions.md ...
 ```
 
-### タスク定義
-1. `task.md` にメインタスクを記述
-2. システムが自動的にワーカー数を決定
-3. 各ワーカーに適切な指示書を生成
-4. 並列実行とモニタリング
+### Task Definition
+1. Define main task in `task.md`
+2. System automatically determines worker count
+3. Generate appropriate instructions for each worker
+4. Execute in parallel with monitoring
 
-## モニタリングと通信
+## Monitoring and Communication
 
-### リアルタイム監視
-- プロセス状態の可視化
-- 各ワーカーの進捗追跡
-- エラー検出と対処
+### Real-time Monitoring
+- Process state visualization
+- Progress tracking for each worker
+- Error detection and handling
 
-### ワーカー間通信
+### Inter-worker Communication
 ```bash
-# ステータス更新
-echo "[Worker1] Status: API実装完了" >> comm/worker1_status.txt
+# Status update
+echo "[Worker1] Status: API implementation complete" >> comm/worker1_status.txt
 
-# 完了通知
-echo "[Worker1] COMPLETED: バックエンドAPI準備完了" >> comm/worker1_status.txt
+# Completion notification
+echo "[Worker1] COMPLETED: Backend API ready" >> comm/worker1_status.txt
 ```
 
-## 期待される効果
+## Expected Benefits
 
-### 開発速度の向上
-- **従来**: 1人のClaude Codeが順番にタスクを処理
-- **並列化後**: N個のClaude Codeが同時に異なる部分を開発
+### Development Speed Improvement
+- **Traditional**: Single Claude Code processes tasks sequentially
+- **Parallelized**: N Claude Code instances develop different parts simultaneously
 
-### 品質の向上
-- 各ワーカーが専門分野に集中
-- 並列レビューとテスト
-- 統合的な品質保証
+### Quality Enhancement
+- Each worker focuses on specialized areas
+- Parallel review and testing
+- Integrated quality assurance
 
-### スケーラビリティ
-- タスクの規模に応じて動的にワーカー数を調整
-- システムリソースの最適利用
-- 将来的にはクラウド環境での分散実行も可能
+### Scalability
+- Dynamically adjust worker count based on task scale
+- Optimal utilization of system resources
+- Future potential for distributed execution in cloud environments
 
-## 今後の展望
+## Future Prospects
 
-1. **Claude API統合**: CLIに加えてAPI経由での並列実行
-2. **分散実行**: 複数マシンでのワーカー分散
-3. **自動最適化**: タスクの自動分割と割り当て
-4. **可視化ダッシュボード**: Web UIでの進捗管理
+1. **Claude API Integration**: Parallel execution via API in addition to CLI
+2. **Distributed Execution**: Worker distribution across multiple machines
+3. **Auto-optimization**: Automatic task splitting and assignment
+4. **Visualization Dashboard**: Progress management through Web UI
 
-## 使用上の注意
+## Usage Notes
 
-- 各ワーカーは独立したClaude Codeインスタンスとして動作
-- ファイルの競合を避けるため、各ワーカーは異なるディレクトリで作業
-- リソース使用量に注意（メモリ約2GB/ワーカー）
+- Each worker operates as an independent Claude Code instance
+- Workers operate in different directories to avoid file conflicts
+- Monitor resource usage (approximately 2GB memory per worker)
 
 ---
 
-このプロジェクトは、AIアシスタントの並列化という新しいパラダイムを実現し、複雑なソフトウェアプロジェクトの開発を革新的に効率化します。
+This project realizes a new paradigm of AI assistant parallelization, revolutionizing the efficiency of complex software project development.

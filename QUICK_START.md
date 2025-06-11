@@ -1,57 +1,57 @@
-# 🚀 Claude Code 並列実行 - クイックスタート
+# 🚀 Claude Code Parallel Execution - Quick Start
 
-## 必要なもの（3つだけ！）
+## Requirements (Only 3!)
 
-1. **Node.js** (v14以上)
-2. **Claude CLI** (インストール済み)
-3. **このリポジトリ**
+1. **Node.js** (v14+)
+2. **Claude CLI** (installed)
+3. **This repository**
 
-## 30秒セットアップ
+## 30-Second Setup
 
 ```bash
-# 1. セットアップ実行（依存関係の自動インストール）
+# 1. Run setup (auto-installs dependencies)
 ./setup_node_runner.sh
 
-# 2. テスト実行
+# 2. Test run
 node parallel_claude_runner.js test_worker1_instructions.md test_worker2_instructions.md
 
-# 3. 本番実行（例：6ワーカーでフルスタックアプリ開発）
+# 3. Production run (example: full-stack app with 6 workers)
 node parallel_claude_runner.js worker{1..6}_instructions.md
 ```
 
-## 何ができるか
+## What It Can Do
 
-### 🎯 本質
-**1つのClaude Codeが、必要なだけ自分の分身を作り、並列で作業する**
+### 🎯 The Essence
+**One Claude Code creates as many clones as needed to work in parallel**
 
-### 📊 例：フルスタックアプリ開発
-- **従来**: 1人のClaude Codeが順番に作業 → 6時間
-- **並列化**: 6人のClaude Codeが同時作業 → 1時間
+### 📊 Example: Full-Stack App Development
+- **Traditional**: 1 Claude Code works sequentially → 6 hours
+- **Parallelized**: 6 Claude Codes work simultaneously → 1 hour
 
-## ファイル構成
+## File Structure
 
 ```
-📁 必須ファイル
-├── 📄 parallel_claude_runner.js    # メインプログラム
-├── 📄 setup_node_runner.sh        # セットアップ
-└── 📄 worker*_instructions.md     # 各ワーカーへの指示
+📁 Required Files
+├── 📄 parallel_claude_runner.js    # Main program
+├── 📄 setup_node_runner.sh        # Setup script
+└── 📄 worker*_instructions.md     # Worker instructions
 
-📁 自動生成
-├── 📂 logs/      # 各ワーカーのログ
-├── 📂 comm/      # ワーカー間通信
-└── 📂 outputs/   # 成果物
+📁 Auto-generated
+├── 📂 logs/      # Worker logs
+├── 📂 comm/      # Inter-worker communication
+└── 📂 outputs/   # Deliverables
 ```
 
-## トラブルシューティング
+## Troubleshooting
 
-### ❌ "Raw mode is not supported" エラー
-→ ✅ node-ptyが解決済み！
+### ❌ "Raw mode is not supported" error
+→ ✅ Solved with node-pty!
 
 ### ❌ claude: command not found
-→ Claude CLIをインストール: `npm install -g @anthropic-ai/claude-code`
+→ Install Claude CLI: `npm install -g @anthropic-ai/claude-code`
 
-### ❌ node-pty のビルドエラー
-→ ビルドツールをインストール:
+### ❌ node-pty build errors
+→ Install build tools:
 ```bash
 # Ubuntu/Debian
 sudo apt-get install build-essential
@@ -60,28 +60,28 @@ sudo apt-get install build-essential
 xcode-select --install
 ```
 
-## 監視方法
+## Monitoring
 
-実行中は自動的にステータスが表示されます：
+Status is automatically displayed during execution:
 ```
 === PARALLEL CLAUDE WORKER MONITOR ===
 Time: 2025-06-11 15:30:00
 
 🟢 Worker 1 (PID: 12345, Runtime: 120s)
-   Status: Backend API 実装中...
+   Status: Implementing backend API...
 
 🟢 Worker 2 (PID: 12346, Runtime: 118s)
-   Status: React コンポーネント作成中...
+   Status: Creating React components...
 
 Progress: 2/6 workers completed
 ```
 
-## 次のステップ
+## Next Steps
 
-1. **task.md** を作成してメインタスクを定義
-2. ワーカー数は自動決定（CPUとメモリに基づく）
-3. 各ワーカーの成果物は `outputs/` に保存
+1. Create **task.md** to define your main task
+2. Worker count is auto-determined (based on CPU and memory)
+3. Each worker's outputs are saved in `outputs/`
 
 ---
 
-💡 **ヒント**: まずはテストワーカー2つで動作確認してから、本格的なタスクに挑戦しましょう！
+💡 **Tip**: Start with 2 test workers to verify everything works before tackling bigger tasks!
