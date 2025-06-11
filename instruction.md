@@ -1,7 +1,15 @@
 # Claude Code Multi-Instance Management Manual
 
 ## OPERATOR INSTRUCTIONS
-**When asked to "follow instruction.md", immediately proceed to the USER TASK SPECIFICATION section at the bottom of this file and execute the specified task using the tmux multi-instance system described in this manual.**
+**When asked to "follow instruction.md", you will act as the MANAGER in the main pane. Your role is to:**
+1. **Read the USER TASK SPECIFICATION** at the bottom of this file
+2. **Set up the worker panes** (4 Claude instances)
+3. **Distribute tasks** to worker panes based on the specification
+4. **Monitor progress** and coordinate between workers
+5. **Collect and integrate results** from all workers
+6. **Generate the final deliverables**
+
+**You are NOT a worker - you are the orchestrator and supervisor of the entire operation.**
 
 ## 1. Introduction
 
@@ -332,28 +340,37 @@ for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
 done
 ```
 
-### Phase 2: Task Assignment Commands
+### Phase 2: Task Assignment Commands (Manager's Toolkit)
+
+As the manager, you will assign tasks to worker panes. Always include clear instructions and reporting requirements.
+
+#### Manager's Task Assignment Philosophy
+- Break down complex tasks into parallel workstreams
+- Assign clear deliverables and deadlines to each worker
+- Require regular progress reports
+- Coordinate dependencies between workers
+- Quality check all outputs before integration
 
 #### A. For Discussion/Brainstorming Tasks
 ```bash
-# Replace [TOPIC], [PERSPECTIVE], [QUESTION] with actual values
-tmux send-keys -t $PANE1 "cd '$WORK_DIR' && You are pane1. Please discuss [TOPIC] from [PERSPECTIVE]. After providing key insights, report with: tmux send-keys -t $MAIN_PANE '[pane1] Key insight: [YOUR_INSIGHT]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE1 Enter
+# As manager, assign different perspectives to each worker
+tmux send-keys -t $PANE1 "cd '$WORK_DIR' && You are Worker 1. Your assignment: Discuss [TOPIC] from [PERSPECTIVE]. Requirements: 1) Provide 3-5 key insights, 2) Support with examples, 3) Report progress every 5 minutes. Final report: tmux send-keys -t $MAIN_PANE '[Worker1] Task complete: [SUMMARY]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE1 Enter
 
-tmux send-keys -t $PANE2 "cd '$WORK_DIR' && You are pane2. Please analyze [TOPIC] focusing on [SPECIFIC_ASPECT]. Report findings with: tmux send-keys -t $MAIN_PANE '[pane2] Finding: [YOUR_FINDING]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE2 Enter
+tmux send-keys -t $PANE2 "cd '$WORK_DIR' && You are Worker 2. Your assignment: Analyze [TOPIC] focusing on [SPECIFIC_ASPECT]. Deliverables: 1) Analysis document, 2) Key findings list. Report progress: tmux send-keys -t $MAIN_PANE '[Worker2] Progress: [STATUS]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE2 Enter
 
-# Continue for PANE3 and PANE4...
+# Continue assigning to Workers 3 and 4...
 ```
 
 #### B. For Development Tasks
 ```bash
-# Replace [PROJECT_NAME], [FEATURE], [COMPONENT] with actual values
-tmux send-keys -t $PANE1 "cd '$WORK_DIR' && You are pane1. Create the backend API for [FEATURE]. Use [FRAMEWORK]. Save to [FILENAME]. Report completion: tmux send-keys -t $MAIN_PANE '[pane1] Backend API created: [FILENAME]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE1 Enter
+# As manager, coordinate parallel development efforts
+tmux send-keys -t $PANE1 "cd '$WORK_DIR' && You are Worker 1 (Backend Developer). Assignment: Create REST API for [FEATURE]. Requirements: 1) Use [FRAMEWORK], 2) Include error handling, 3) Write API documentation. Milestones: Report when routes are defined, when database integration is complete, and when testing is done. Use: tmux send-keys -t $MAIN_PANE '[Worker1] Milestone: [DESCRIPTION]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE1 Enter
 
-tmux send-keys -t $PANE2 "cd '$WORK_DIR' && You are pane2. Implement frontend UI for [FEATURE]. Use [FRAMEWORK]. Save to [FILENAME]. Report: tmux send-keys -t $MAIN_PANE '[pane2] UI component created: [FILENAME]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE2 Enter
+tmux send-keys -t $PANE2 "cd '$WORK_DIR' && You are Worker 2 (Frontend Developer). Wait for Worker 1 to define API endpoints, then implement UI for [FEATURE]. Requirements: 1) Responsive design, 2) Error state handling, 3) Loading states. Report blockers immediately: tmux send-keys -t $MAIN_PANE '[Worker2] Blocker: [ISSUE]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE2 Enter
 
-tmux send-keys -t $PANE3 "cd '$WORK_DIR' && You are pane3. Design database schema for [FEATURE]. Include [REQUIREMENTS]. Save to [FILENAME]. Report: tmux send-keys -t $MAIN_PANE '[pane3] Schema created: [FILENAME]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE3 Enter
+tmux send-keys -t $PANE3 "cd '$WORK_DIR' && You are Worker 3 (Database Architect). Design and implement schema for [FEATURE]. Coordinate with Worker 1 on models. Deliverables: 1) Schema design, 2) Migration scripts, 3) Seed data. Report: tmux send-keys -t $MAIN_PANE '[Worker3] Status: [UPDATE]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE3 Enter
 
-tmux send-keys -t $PANE4 "cd '$WORK_DIR' && You are pane4. Write tests for [COMPONENT]. Cover [TEST_SCENARIOS]. Save to [FILENAME]. Report: tmux send-keys -t $MAIN_PANE '[pane4] Tests created: [FILENAME]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE4 Enter
+tmux send-keys -t $PANE4 "cd '$WORK_DIR' && You are Worker 4 (QA Engineer). Monitor other workers' outputs and write tests. Start with unit tests, then integration tests once components are ready. Report test coverage: tmux send-keys -t $MAIN_PANE '[Worker4] Coverage: [PERCENTAGE]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE4 Enter
 ```
 
 #### C. For Research Tasks
@@ -386,87 +403,175 @@ tmux send-keys -t $PANE2 "cd '$WORK_DIR' && You are pane2. Solve [PROBLEM] using
 # Continue for testing and optimization...
 ```
 
-### Phase 3: Monitoring and Coordination
+### Phase 3: Manager's Monitoring and Coordination Duties
 
+As the manager, you have specific responsibilities beyond task assignment:
+
+#### 3.1 Active Supervision
 ```bash
-# Monitor all panes continuously
-watch_panes() {
-    while true; do
-        clear
-        echo "=== PANE STATUS MONITOR ==="
-        for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
-            echo "--- $pane ---"
-            tmux capture-pane -t $pane -p | tail -5
-            echo ""
-        done
-        sleep 5
-    done
-}
-
-# Check token usage periodically
-check_tokens() {
+# Regularly check worker progress
+check_worker_status() {
+    echo "=== WORKER STATUS CHECK $(date) ==="
     for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
-        echo "Checking $pane tokens..."
-        tmux send-keys -t $pane "ccusage" && sleep 0.1 && tmux send-keys -t $pane Enter
-        sleep 2
+        echo "Checking $pane..."
+        tmux send-keys -t $pane "Please report current status and any blockers" && sleep 0.1 && tmux send-keys -t $pane Enter
     done
 }
 
-# Coordinate dependent tasks
-coordinate_pipeline() {
-    # Wait for pane1 to complete
-    echo "Waiting for pane1..."
-    while ! tmux capture-pane -t $MAIN_PANE -p | grep -q "\[pane1\].*completed"; do
-        sleep 5
+# Monitor for stuck or idle workers
+detect_idle_workers() {
+    for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
+        last_output=$(tmux capture-pane -t $pane -p | tail -10)
+        # If no recent activity, prompt worker
+        tmux send-keys -t $pane "Status update required. Are you blocked?" && sleep 0.1 && tmux send-keys -t $pane Enter
     done
-    
-    # Start pane2 task that depends on pane1
-    tmux send-keys -t $PANE2 "[DEPENDENT_TASK_COMMAND]" && sleep 0.1 && tmux send-keys -t $PANE2 Enter
 }
 ```
 
-### Phase 4: Results Collection
-
+#### 3.2 Quality Control
 ```bash
+# Review deliverables from workers
+review_output() {
+    echo "=== QUALITY REVIEW ==="
+    echo "1. Check if outputs meet requirements"
+    echo "2. Verify consistency across worker outputs"
+    echo "3. Identify gaps or missing elements"
+    echo "4. Request revisions if needed"
+}
+
+# Send revision requests
+request_revision() {
+    tmux send-keys -t $[WORKER_PANE] "Revision needed: [SPECIFIC_ISSUE]. Please update and report back." && sleep 0.1 && tmux send-keys -t $[WORKER_PANE] Enter
+}
+```
+
+#### 3.3 Resource Management
+```bash
+# Monitor and manage token usage
+manage_resources() {
+    for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
+        tmux send-keys -t $pane "ccusage" && sleep 0.1 && tmux send-keys -t $pane Enter
+        sleep 2
+        # If approaching limit, instruct worker to summarize and clear
+        tmux send-keys -t $pane "Approaching token limit. Please save your work and prepare to clear context." Enter
+    done
+}
+```
+
+#### 3.4 Coordination Patterns
+```bash
+# Manage dependencies between workers
+coordinate_dependencies() {
+    # Example: Frontend waits for Backend API
+    echo "Worker 2: Hold on API integration until Worker 1 completes endpoint definitions"
+    
+    # When Worker 1 reports completion
+    tmux send-keys -t $PANE2 "Worker 1 has completed API endpoints. You may now proceed with integration." Enter
+}
+
+# Facilitate information sharing
+share_information() {
+    # When one worker produces something others need
+    tmux send-keys -t $PANE2 "Worker 1 has created API docs at api_docs.md. Please review for your UI implementation." Enter
+    tmux send-keys -t $PANE4 "Workers 1-3 have completed initial implementations. Begin integration testing." Enter
+}
+```
+
+### Phase 4: Manager's Results Integration and Delivery
+
+As manager, you are responsible for collecting, integrating, and delivering the final results.
+
+#### 4.1 Results Collection
+```bash
+# Instruct workers to finalize their outputs
+finalize_outputs() {
+    echo "=== FINALIZING OUTPUTS ==="
+    for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
+        tmux send-keys -t $pane "Please finalize your deliverables and provide a summary of what you've created." && sleep 0.1 && tmux send-keys -t $pane Enter
+    done
+}
+
 # Collect all outputs
 collect_results() {
     mkdir -p results
     
-    # Capture final outputs from each pane
+    # Get summaries from each worker
     for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
-        tmux capture-pane -t $pane -p > "results/${pane}_output.txt"
+        tmux send-keys -t $pane "List all files you've created with brief descriptions" && sleep 0.1 && tmux send-keys -t $pane Enter
     done
     
-    # List all created files
-    echo "=== Created Files ==="
-    ls -la | grep -E "\.(md|py|js|json|txt)$"
+    # Capture outputs
+    sleep 5  # Give workers time to respond
+    for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
+        tmux capture-pane -t $pane -p > "results/${pane}_summary.txt"
+    done
 }
+```
 
-# Generate final report
-generate_report() {
+#### 4.2 Integration and Synthesis
+```bash
+# Manager's synthesis responsibilities
+synthesize_results() {
+    echo "=== MANAGER'S SYNTHESIS PHASE ==="
+    echo "1. Review all worker outputs"
+    echo "2. Identify overlaps and gaps"
+    echo "3. Resolve any conflicts"
+    echo "4. Create unified deliverable"
+    echo "5. Add executive summary"
+}
+```
+
+#### 4.3 Final Report Generation
+```bash
+# Generate comprehensive final report
+generate_final_report() {
     cat > final_report.md << EOF
 # Task Execution Report
 
+## Executive Summary
+[MANAGER'S HIGH-LEVEL SUMMARY OF ACHIEVEMENTS]
+
 ## Task: [TASK_DESCRIPTION]
 ## Date: $(date)
+## Manager: Main Pane
+## Workers: 4 Claude Instances
 
-### Pane 1 Results
-[PANE1_SUMMARY]
+### Manager's Assessment
+[YOUR EVALUATION OF THE TASK EXECUTION]
 
-### Pane 2 Results
-[PANE2_SUMMARY]
+### Worker 1 Deliverables
+[SUMMARY OF WORKER 1'S CONTRIBUTIONS]
+- Files created: [LIST]
+- Key achievements: [LIST]
 
-### Pane 3 Results
-[PANE3_SUMMARY]
+### Worker 2 Deliverables
+[SUMMARY OF WORKER 2'S CONTRIBUTIONS]
+- Files created: [LIST]
+- Key achievements: [LIST]
 
-### Pane 4 Results
-[PANE4_SUMMARY]
+### Worker 3 Deliverables
+[SUMMARY OF WORKER 3'S CONTRIBUTIONS]
+- Files created: [LIST]
+- Key achievements: [LIST]
 
-### Integrated Results
-[INTEGRATED_SUMMARY]
+### Worker 4 Deliverables
+[SUMMARY OF WORKER 4'S CONTRIBUTIONS]
+- Files created: [LIST]
+- Key achievements: [LIST]
 
-### Files Created
-$(ls -la | grep -E "\.(md|py|js|json|txt)$")
+### Integrated Solution
+[MANAGER'S SYNTHESIS OF ALL WORK]
+
+### Quality Metrics
+- Task completion: [PERCENTAGE]
+- Quality assessment: [RATING]
+- Timeline adherence: [STATUS]
+
+### Recommendations
+[MANAGER'S RECOMMENDATIONS FOR FUTURE IMPROVEMENTS]
+
+### All Files Created
+$(ls -la | grep -E "\.(md|py|js|json|txt|html|css|jsx?|tsx?|yml|yaml)$")
 EOF
 }
 ```
@@ -536,16 +641,36 @@ Completion report: tmux send-keys -t $MAIN_PANE '[PANE_NAME] Completed: [COMPLET
 
 ---
 
-## OPERATOR EXECUTION CHECKLIST
+## MANAGER EXECUTION CHECKLIST
 
-When executing the above task:
+As the manager in the main pane, follow this workflow:
 
+### Initial Setup
 1. [ ] Read and understand the user's task specification
-2. [ ] Set up the tmux environment (Phase 1)
-3. [ ] Choose appropriate task pattern from Phase 2 based on task type
-4. [ ] Replace placeholders with actual task details
-5. [ ] Execute task assignment commands
-6. [ ] Monitor progress using Phase 3 tools
-7. [ ] Collect results using Phase 4 tools
-8. [ ] Generate final report with actual results
-9. [ ] Clean up resources using Phase 5 tools
+2. [ ] Analyze task complexity and plan worker allocation
+3. [ ] Set up the tmux environment with 4 worker panes (Phase 1)
+
+### Task Distribution
+4. [ ] Break down the main task into 4 parallel workstreams
+5. [ ] Assign specific roles to each worker (Developer, Analyst, etc.)
+6. [ ] Send detailed task assignments with clear deliverables
+7. [ ] Set reporting requirements and milestones
+
+### Active Management
+8. [ ] Monitor worker progress continuously
+9. [ ] Respond to worker questions and blockers
+10. [ ] Coordinate dependencies between workers
+11. [ ] Perform quality checks on interim deliverables
+12. [ ] Redirect workers as needed based on progress
+
+### Results Integration
+13. [ ] Collect final outputs from all workers
+14. [ ] Review and synthesize worker deliverables
+15. [ ] Resolve any conflicts or inconsistencies
+16. [ ] Create integrated final deliverable
+17. [ ] Generate comprehensive final report
+
+### Cleanup
+18. [ ] Ensure all work is saved
+19. [ ] Thank workers for their contributions
+20. [ ] Clear all panes to free resources
