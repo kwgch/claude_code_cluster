@@ -393,6 +393,26 @@ if [[ ! -d "src" && ! -d "app" && ! -f "package.json" && ! -f "requirements.txt"
 else
     echo "Existing project detected. Will use project's existing structure."
 fi
+
+# 7. Initialize Git workflow (if in a git repository)
+if git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Git repository detected. Setting up work branch..."
+    
+    # Save current branch name
+    ORIGINAL_BRANCH=$(git branch --show-current)
+    echo "Current branch: $ORIGINAL_BRANCH"
+    
+    # Create work branch with timestamp
+    WORK_BRANCH="work/task-$(date +%Y%m%d-%H%M%S)"
+    git checkout -b "$WORK_BRANCH"
+    echo "Created and switched to work branch: $WORK_BRANCH"
+    
+    # Initial commit for task start
+    git add task.md 2>/dev/null || true
+    git commit -m "Start task: $(head -n 20 task.md | grep -A 2 'Task Description' | tail -n +2 | tr '\n' ' ' | cut -c 1-50)..." 2>/dev/null || true
+else
+    echo "Not a git repository. Proceeding without version control."
+fi
 ```
 
 **Output Directory Guidelines:**
@@ -507,7 +527,60 @@ tmux send-keys -t $PANE2 "cd '$WORK_DIR' && You are pane2. Solve [PROBLEM] using
 
 As the manager, you have specific responsibilities beyond task assignment:
 
-#### 3.1 Active Supervision
+#### 3.1 Git Progress Management
+
+**When to Commit (Manager's Discretion):**
+- When a worker completes a major component
+- After successful integration of multiple workers' outputs
+- When reaching a stable checkpoint
+- Before making significant changes to approach
+- At regular intervals for long-running tasks (e.g., every hour)
+
+```bash
+# Commit progress at major milestones
+commit_progress() {
+    if git rev-parse --git-dir > /dev/null 2>&1; then
+        echo "Committing current progress..."
+        
+        # Stage all work files
+        git add -A
+        
+        # Create meaningful commit message
+        COMMIT_MSG="Progress: "
+        
+        # Check what workers have completed
+        if ls outputs/development/* 2>/dev/null | grep -q .; then
+            COMMIT_MSG="${COMMIT_MSG}development work, "
+        fi
+        if ls outputs/research/* 2>/dev/null | grep -q .; then
+            COMMIT_MSG="${COMMIT_MSG}research complete, "
+        fi
+        if ls outputs/content/* 2>/dev/null | grep -q .; then
+            COMMIT_MSG="${COMMIT_MSG}content created, "
+        fi
+        
+        # Remove trailing comma and commit
+        COMMIT_MSG=$(echo $COMMIT_MSG | sed 's/, $//')
+        git commit -m "$COMMIT_MSG" || echo "No changes to commit"
+    fi
+}
+
+# Auto-commit on significant milestones
+milestone_commit() {
+    local milestone="$1"
+    if git rev-parse --git-dir > /dev/null 2>&1; then
+        git add -A
+        git commit -m "Milestone: $milestone" || true
+    fi
+}
+
+# Example usage:
+# milestone_commit "Backend API completed"
+# milestone_commit "All tests passing"
+# milestone_commit "Frontend integrated with backend"
+```
+
+#### 3.2 Active Supervision
 ```bash
 # Regularly check worker progress
 check_worker_status() {
@@ -714,7 +787,24 @@ complete_task() {
     echo "Cleaning up worker instruction files..."
     rm -f worker1_instructions.md worker2_instructions.md worker3_instructions.md worker4_instructions.md
     
-    # 5. Final report in main pane
+    # 5. Final git commit (if in git repository)
+    if git rev-parse --git-dir > /dev/null 2>&1; then
+        echo "Creating final commit..."
+        git add -A
+        git commit -m "Complete task: $(head -n 20 task.md | grep -A 2 'Task Description' | tail -n +2 | tr '\n' ' ' | cut -c 1-50)..." || true
+        
+        echo ""
+        echo "Git Summary:"
+        echo "- Work branch: $(git branch --show-current)"
+        echo "- Commits made: $(git rev-list --count $ORIGINAL_BRANCH..HEAD)"
+        echo "- Files changed: $(git diff --name-only $ORIGINAL_BRANCH..HEAD | wc -l)"
+        echo ""
+        echo "To merge this work:"
+        echo "  git checkout $ORIGINAL_BRANCH"
+        echo "  git merge $(git branch --show-current)"
+    fi
+    
+    # 6. Final report in main pane
     echo "==================================="
     echo "TASK COMPLETED SUCCESSFULLY"
     echo "==================================="
@@ -762,35 +852,39 @@ As the manager in the main pane, follow this workflow:
 1. [ ] Read task specification from task.md
 2. [ ] Analyze task complexity and plan worker allocation
 3. [ ] Determine if this is a new creation task or modification of existing project
-4. [ ] Set up the tmux environment with 4 worker panes (Phase 1)
-5. [ ] Create output directory structure if needed (for new creation tasks)
+4. [ ] Initialize git workflow if in a git repository
+5. [ ] Set up the tmux environment with 4 worker panes (Phase 1)
+6. [ ] Create output directory structure if needed (for new creation tasks)
 
 ### Task Distribution
-6. [ ] Break down the main task into 4 parallel workstreams
-7. [ ] Assign specific roles to each worker (Developer, Analyst, etc.)
-8. [ ] Create worker instruction files with output location guidance
-9. [ ] Send detailed task assignments with clear deliverables
-10. [ ] Set reporting requirements and milestones
+7. [ ] Break down the main task into 4 parallel workstreams
+8. [ ] Assign specific roles to each worker (Developer, Analyst, etc.)
+9. [ ] Create worker instruction files with output location guidance
+10. [ ] Send detailed task assignments with clear deliverables
+11. [ ] Set reporting requirements and milestones
 
 ### Active Management
-11. [ ] Monitor worker progress continuously
-12. [ ] Respond to worker questions and blockers
-13. [ ] Coordinate dependencies between workers
-14. [ ] Perform quality checks on interim deliverables
-15. [ ] Redirect workers as needed based on progress
+12. [ ] Monitor worker progress continuously
+13. [ ] Commit progress at major milestones (use `milestone_commit "description"`)
+14. [ ] Respond to worker questions and blockers
+15. [ ] Coordinate dependencies between workers
+16. [ ] Perform quality checks on interim deliverables
+17. [ ] Redirect workers as needed based on progress
+18. [ ] Commit when significant components are completed
 
 ### Results Integration
-16. [ ] Collect final outputs from all workers
-17. [ ] Review and synthesize worker deliverables
-18. [ ] Resolve any conflicts or inconsistencies
-19. [ ] Create integrated final deliverable
-20. [ ] Generate comprehensive final report
+19. [ ] Collect final outputs from all workers
+20. [ ] Review and synthesize worker deliverables
+21. [ ] Resolve any conflicts or inconsistencies
+22. [ ] Create integrated final deliverable
+23. [ ] Generate comprehensive final report
 
 ### Task Completion
-21. [ ] Ensure all work is saved
-22. [ ] Thank workers for their contributions
-23. [ ] Execute `complete_task()` to:
+24. [ ] Ensure all work is saved
+25. [ ] Thank workers for their contributions
+26. [ ] Execute `complete_task()` to:
     - [ ] Close worker panes
     - [ ] Delete worker instruction files
-    - [ ] Display completion report
-24. [ ] Remain available in main pane for follow-up
+    - [ ] Create final git commit
+    - [ ] Display completion report with git summary
+27. [ ] Remain available in main pane for follow-up or merge operations
