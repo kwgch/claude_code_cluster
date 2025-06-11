@@ -53,8 +53,18 @@ Claude will automatically:
 
 ```
 /
-├── README.md          # This file
-└── instruction.md     # Detailed task execution manual with templates
+├── README.md                      # This file
+├── instruction.md                 # Detailed task execution manual with templates
+├── worker_instructions_template.md # Template for creating worker assignments
+├── start.sh                       # Launch script for the system
+├── .gitignore                     # Git ignore rules
+├── worker[1-4]_instructions.md    # Created by manager for each task (not in git)
+└── outputs/                       # All task outputs go here (not in git)
+    ├── development/               # Code, APIs, databases, tests
+    ├── research/                  # Research findings, data, analysis
+    ├── content/                   # Articles, documentation, media
+    ├── reports/                   # Final reports, summaries
+    └── temp/                      # Temporary work files
 ```
 
 ## Supported Task Types

@@ -352,6 +352,31 @@ for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
     echo "=== $pane status ==="
     tmux capture-pane -t $pane -p | tail -3
 done
+
+# 6. Create output directory structure (if needed)
+# Check if this is a new creation task or working on existing project
+if [[ ! -d "src" && ! -d "app" && ! -f "package.json" && ! -f "requirements.txt" ]]; then
+    echo "Appears to be a new project. Creating output directory structure..."
+    mkdir -p outputs/{development,research,content,reports,temp}
+    echo "Created output directory structure:"
+    ls -la outputs/
+else
+    echo "Existing project detected. Will use project's existing structure."
+fi
+```
+
+**Output Directory Guidelines:**
+- **New Creation Tasks**: Use the `outputs/` directory structure
+- **Existing Projects**: Follow the project's existing conventions
+- **Mixed Tasks**: Use `outputs/` for new deliverables, existing structure for modifications
+
+```
+outputs/              # For new creation tasks only
+├── development/      # Code, APIs, databases, tests
+├── research/         # Research findings, data, analysis
+├── content/          # Articles, documentation, media
+├── reports/          # Final reports, summaries, presentations
+└── temp/            # Temporary files, work in progress
 ```
 
 ### Phase 2: Task Assignment Commands (Manager's Toolkit)
@@ -371,26 +396,51 @@ As the manager, you will assign tasks to worker panes. Always include clear inst
 - Coordinate dependencies between workers
 - Quality check all outputs before integration
 
+#### Preparation: Create Worker Instructions
+Before assigning tasks, create instruction files for each worker:
+
+```bash
+# Create worker instruction files based on the template
+cp worker_instructions_template.md worker1_instructions.md
+cp worker_instructions_template.md worker2_instructions.md
+cp worker_instructions_template.md worker3_instructions.md
+cp worker_instructions_template.md worker4_instructions.md
+
+# Edit each file with specific instructions for that worker
+# Or create them programmatically as the manager
+```
+
+**Benefits of Using Instruction Files:**
+- No character limit in tmux commands
+- Workers can re-read instructions if needed
+- Clear documentation of what each worker was asked to do
+- Easy to review and modify assignments
+- Can include examples, templates, and detailed specifications
+
 #### A. For Discussion/Brainstorming Tasks
 ```bash
-# As manager, assign different perspectives to each worker
-tmux send-keys -t $PANE1 "cd '$WORK_DIR' && You are Worker 1. Your assignment: Discuss [TOPIC] from [PERSPECTIVE]. Requirements: 1) Provide 3-5 key insights, 2) Support with examples, 3) Report progress every 5 minutes. Final report: tmux send-keys -t $MAIN_PANE '[Worker1] Task complete: [SUMMARY]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE1 Enter
+# As manager, create instruction files then assign workers to read them
+# First, create worker1_instructions.md with specific task details, then:
+tmux send-keys -t $PANE1 "cd '$WORK_DIR' && Read worker1_instructions.md for your assignment. Begin immediately and follow all communication protocols specified in the file." && sleep 0.1 && tmux send-keys -t $PANE1 Enter
 
-tmux send-keys -t $PANE2 "cd '$WORK_DIR' && You are Worker 2. Your assignment: Analyze [TOPIC] focusing on [SPECIFIC_ASPECT]. Deliverables: 1) Analysis document, 2) Key findings list. Report progress: tmux send-keys -t $MAIN_PANE '[Worker2] Progress: [STATUS]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE2 Enter
+# Similarly for other workers:
+tmux send-keys -t $PANE2 "cd '$WORK_DIR' && Read worker2_instructions.md for your assignment. Begin immediately and follow all communication protocols." && sleep 0.1 && tmux send-keys -t $PANE2 Enter
 
-# Continue assigning to Workers 3 and 4...
+tmux send-keys -t $PANE3 "cd '$WORK_DIR' && Read worker3_instructions.md for your assignment. Begin immediately and follow all communication protocols." && sleep 0.1 && tmux send-keys -t $PANE3 Enter
+
+tmux send-keys -t $PANE4 "cd '$WORK_DIR' && Read worker4_instructions.md for your assignment. Begin immediately and follow all communication protocols." && sleep 0.1 && tmux send-keys -t $PANE4 Enter
 ```
 
 #### B. For Development Tasks
 ```bash
-# As manager, coordinate parallel development efforts
-tmux send-keys -t $PANE1 "cd '$WORK_DIR' && You are Worker 1 (Backend Developer). Assignment: Create REST API for [FEATURE]. Requirements: 1) Use [FRAMEWORK], 2) Include error handling, 3) Write API documentation. Milestones: Report when routes are defined, when database integration is complete, and when testing is done. Use: tmux send-keys -t $MAIN_PANE '[Worker1] Milestone: [DESCRIPTION]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE1 Enter
+# Create detailed instruction files for each developer role, then:
+tmux send-keys -t $PANE1 "cd '$WORK_DIR' && Read worker1_instructions.md for your Backend Developer assignment. Start immediately." && sleep 0.1 && tmux send-keys -t $PANE1 Enter
 
-tmux send-keys -t $PANE2 "cd '$WORK_DIR' && You are Worker 2 (Frontend Developer). Wait for Worker 1 to define API endpoints, then implement UI for [FEATURE]. Requirements: 1) Responsive design, 2) Error state handling, 3) Loading states. Report blockers immediately: tmux send-keys -t $MAIN_PANE '[Worker2] Blocker: [ISSUE]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE2 Enter
+tmux send-keys -t $PANE2 "cd '$WORK_DIR' && Read worker2_instructions.md for your Frontend Developer assignment. Note dependencies on Worker 1." && sleep 0.1 && tmux send-keys -t $PANE2 Enter
 
-tmux send-keys -t $PANE3 "cd '$WORK_DIR' && You are Worker 3 (Database Architect). Design and implement schema for [FEATURE]. Coordinate with Worker 1 on models. Deliverables: 1) Schema design, 2) Migration scripts, 3) Seed data. Report: tmux send-keys -t $MAIN_PANE '[Worker3] Status: [UPDATE]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE3 Enter
+tmux send-keys -t $PANE3 "cd '$WORK_DIR' && Read worker3_instructions.md for your Database Architect assignment. Coordinate with Worker 1 as specified." && sleep 0.1 && tmux send-keys -t $PANE3 Enter
 
-tmux send-keys -t $PANE4 "cd '$WORK_DIR' && You are Worker 4 (QA Engineer). Monitor other workers' outputs and write tests. Start with unit tests, then integration tests once components are ready. Report test coverage: tmux send-keys -t $MAIN_PANE '[Worker4] Coverage: [PERCENTAGE]' && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter" && sleep 0.1 && tmux send-keys -t $PANE4 Enter
+tmux send-keys -t $PANE4 "cd '$WORK_DIR' && Read worker4_instructions.md for your QA Engineer assignment. Monitor other workers' outputs as instructed." && sleep 0.1 && tmux send-keys -t $PANE4 Enter
 ```
 
 #### C. For Research Tasks
@@ -591,8 +641,15 @@ generate_final_report() {
 [MANAGER'S RECOMMENDATIONS FOR FUTURE IMPROVEMENTS]
 
 ### All Files Created
-$(ls -la | grep -E "\.(md|py|js|json|txt|html|css|jsx?|tsx?|yml|yaml)$")
+$(find outputs -type f -name "*.*" | sort)
+
+### Directory Structure
+$(tree outputs 2>/dev/null || find outputs -type d | sort | sed 's|^|  |')
 EOF
+
+    # Save the report in the reports directory
+    mv final_report.md outputs/reports/
+    echo "Final report saved to: outputs/reports/final_report.md"
 }
 ```
 
@@ -668,29 +725,32 @@ As the manager in the main pane, follow this workflow:
 ### Initial Setup
 1. [ ] Read and understand the user's task specification
 2. [ ] Analyze task complexity and plan worker allocation
-3. [ ] Set up the tmux environment with 4 worker panes (Phase 1)
+3. [ ] Determine if this is a new creation task or modification of existing project
+4. [ ] Set up the tmux environment with 4 worker panes (Phase 1)
+5. [ ] Create output directory structure if needed (for new creation tasks)
 
 ### Task Distribution
-4. [ ] Break down the main task into 4 parallel workstreams
-5. [ ] Assign specific roles to each worker (Developer, Analyst, etc.)
-6. [ ] Send detailed task assignments with clear deliverables
-7. [ ] Set reporting requirements and milestones
+6. [ ] Break down the main task into 4 parallel workstreams
+7. [ ] Assign specific roles to each worker (Developer, Analyst, etc.)
+8. [ ] Create worker instruction files with output location guidance
+9. [ ] Send detailed task assignments with clear deliverables
+10. [ ] Set reporting requirements and milestones
 
 ### Active Management
-8. [ ] Monitor worker progress continuously
-9. [ ] Respond to worker questions and blockers
-10. [ ] Coordinate dependencies between workers
-11. [ ] Perform quality checks on interim deliverables
-12. [ ] Redirect workers as needed based on progress
+11. [ ] Monitor worker progress continuously
+12. [ ] Respond to worker questions and blockers
+13. [ ] Coordinate dependencies between workers
+14. [ ] Perform quality checks on interim deliverables
+15. [ ] Redirect workers as needed based on progress
 
 ### Results Integration
-13. [ ] Collect final outputs from all workers
-14. [ ] Review and synthesize worker deliverables
-15. [ ] Resolve any conflicts or inconsistencies
-16. [ ] Create integrated final deliverable
-17. [ ] Generate comprehensive final report
+16. [ ] Collect final outputs from all workers
+17. [ ] Review and synthesize worker deliverables
+18. [ ] Resolve any conflicts or inconsistencies
+19. [ ] Create integrated final deliverable
+20. [ ] Generate comprehensive final report
 
 ### Cleanup
-18. [ ] Ensure all work is saved
-19. [ ] Thank workers for their contributions
-20. [ ] Clear all panes to free resources
+21. [ ] Ensure all work is saved
+22. [ ] Thank workers for their contributions
+23. [ ] Clear all panes to free resources
