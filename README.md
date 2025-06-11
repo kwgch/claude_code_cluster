@@ -21,73 +21,73 @@ This system enables efficient parallel task execution using multiple Claude Code
 
 ## Quick Start
 
-### Option A: Using the Launch Script (Recommended)
+Choose your preferred mode:
+
+### Mode 1: tmux Mode (Visual Panes)
+Best for: Interactive monitoring, local development, visual feedback
 
 1. **Edit your task**
    ```bash
-   # Open task.md and fill in your task details
-   nano task.md  # or your preferred editor
+   nano task.md  # Edit task specification
    ```
 
-2. **Run the launch script**
+2. **Run tmux launcher**
    ```bash
    ./start.sh
    ```
 
 3. **Execute your task**
-   Once in the tmux session, use one of these methods:
-   ```
-   /project:task
-   ```
-   Or simply:
    ```
    /task
    ```
-   Or type directly:
-   ```
-   follow instruction.md
-   ```
 
-### Option B: Manual Setup
+### Mode 2: Process Mode (Background Execution)
+Best for: Remote/SSH sessions, resource-constrained environments, automated workflows
 
 1. **Edit your task**
-   Open `task.md` and fill in your task details.
-
-2. **Start tmux session**
    ```bash
-   tmux
+   nano task.md  # Edit task specification
    ```
 
-3. **Launch Claude Code**
+2. **Run process launcher**
    ```bash
-   claude --dangerously-skip-permissions
+   ./start-process.sh
    ```
-   >[!WARNING]
-   >`--dangerously-skip-permissions` Use at your own risk!
 
-4. **Execute your task**
-   Use one of these methods:
+3. **Execute your task**
    ```
-   /project:task
+   /task-process
    ```
-   Or simply:
-   ```
-   /task
-   ```
-   Or type directly:
-   ```
-   follow instruction.md
+
+4. **Monitor progress**
+   ```bash
+   # View logs
+   tail -f logs/worker*.log
+   
+   # Check status
+   cat comm/worker*_status.txt
    ```
 
 ### What Happens Next
 
-Claude will automatically:
+**tmux Mode:**
+- Visual panes show real-time progress
+- Interactive monitoring and intervention possible
+- All workers visible simultaneously
+
+**Process Mode:**
+- Workers run silently in background
+- Progress tracked via log files
+- No tmux required
+- Better for automated/remote execution
+
+Both modes will:
 - Read your task specification
-- Set up the multi-instance environment (4 worker panes)
-- Distribute work across panes
+- Set up multi-instance environment (4 workers)
+- Distribute work across instances
 - Monitor and coordinate progress
 - Generate results and reports
-- Close worker panes when complete
+- Clean up when complete
 
 ## Project Structure
 
@@ -95,20 +95,25 @@ Claude will automatically:
 /
 ├── README.md                      # This file
 ├── task.md                        # Current task specification (user edits this)
-├── instruction.md                 # System configuration and execution manual
+├── instruction_tmux.md            # tmux mode execution manual
+├── instruction_process.md         # Process mode execution manual
 ├── worker_instructions_template.md # Template for creating worker assignments
-├── start.sh                       # Launch script for the system
+├── start.sh                       # tmux mode launcher
+├── start-process.sh               # Process mode launcher
 ├── .gitignore                     # Git ignore rules
 ├── .claude/
 │   └── commands/
-│       └── task.md               # Custom /task command
+│       ├── task.md               # tmux mode command
+│       └── task-process.md       # Process mode command
 ├── worker[1-4]_instructions.md    # Created by manager for each task (not in git)
-└── outputs/                       # All task outputs go here (not in git)
-    ├── development/               # Code, APIs, databases, tests
-    ├── research/                  # Research findings, data, analysis
-    ├── content/                   # Articles, documentation, media
-    ├── reports/                   # Final reports, summaries
-    └── temp/                      # Temporary work files
+├── outputs/                       # All task outputs go here (not in git)
+│   ├── development/              # Code, APIs, databases, tests
+│   ├── research/                 # Research findings, data, analysis
+│   ├── content/                  # Articles, documentation, media
+│   ├── reports/                  # Final reports, summaries
+│   └── temp/                     # Temporary work files
+├── logs/                          # Process mode: worker logs (not in git)
+└── comm/                          # Process mode: status files (not in git)
 ```
 
 ## Supported Task Types

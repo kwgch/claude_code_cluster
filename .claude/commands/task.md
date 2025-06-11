@@ -1,1 +1,1 @@
-follow instruction.md
+follow instruction_tmux.md
