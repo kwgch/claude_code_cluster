@@ -1,0 +1,28 @@
+{
+  "name": "parallel-claude-runner",
+  "version": "1.0.0",
+  "description": "Run multiple Claude CLI instances in parallel using PTY",
+  "main": "parallel_claude_runner.js",
+  "scripts": {
+    "start": "node parallel_claude_runner.js",
+    "test": "node test_runner.js",
+    "install-deps": "npm install",
+    "setup": "npm install && chmod +x *.js"
+  },
+  "dependencies": {
+    "node-pty": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "keywords": [
+    "claude",
+    "cli",
+    "parallel",
+    "pty",
+    "terminal",
+    "automation"
+  ],
+  "author": "Claude Code Parallel Runner",
+  "license": "MIT"
+}
