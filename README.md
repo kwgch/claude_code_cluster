@@ -21,33 +21,73 @@ This system enables efficient parallel task execution using multiple Claude Code
 
 ## Quick Start
 
-### 1. Edit your task
-Open `instruction.md` and fill in the **USER TASK SPECIFICATION** section at the bottom with your specific task details.
+### Option A: Using the Launch Script (Recommended)
 
-### 2. Start tmux session
-```bash
-tmux
-```
+1. **Edit your task**
+   ```bash
+   # Open instruction.md and fill in the USER TASK SPECIFICATION section
+   nano instruction.md  # or your preferred editor
+   ```
 
-### 3. Launch Claude Code
-```bash
-claude --dangerously-skip-permissions
-```
->[!WARNING]
->`--dangerously-skip-permissions` Use at your own risk!
+2. **Run the launch script**
+   ```bash
+   ./start.sh
+   ```
 
-### 4. Execute your task
-Simply tell Claude:
-```
-follow instruction.md
-```
+3. **Execute your task**
+   Once in the tmux session, use one of these methods:
+   ```
+   /project:task
+   ```
+   Or simply:
+   ```
+   /task
+   ```
+   Or type directly:
+   ```
+   follow instruction.md
+   ```
+
+### Option B: Manual Setup
+
+1. **Edit your task**
+   Open `instruction.md` and fill in the **USER TASK SPECIFICATION** section at the bottom with your specific task details.
+
+2. **Start tmux session**
+   ```bash
+   tmux
+   ```
+
+3. **Launch Claude Code**
+   ```bash
+   claude --dangerously-skip-permissions
+   ```
+   >[!WARNING]
+   >`--dangerously-skip-permissions` Use at your own risk!
+
+4. **Execute your task**
+   Use one of these methods:
+   ```
+   /project:task
+   ```
+   Or simply:
+   ```
+   /task
+   ```
+   Or type directly:
+   ```
+   follow instruction.md
+   ```
+
+### What Happens Next
 
 Claude will automatically:
 - Read your task specification
-- Set up the multi-instance environment
+- Set up the multi-instance environment (4 worker panes)
 - Distribute work across panes
-- Execute the task
+- Monitor and coordinate progress
 - Generate results and reports
+- Close worker panes when complete
 
 ## Project Structure
 
