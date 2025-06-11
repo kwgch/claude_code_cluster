@@ -3,10 +3,12 @@
 ## PROJECT CONFIGURATION
 
 ### System Configuration
-- **Worker Processes**: 4
+- **Worker Processes**: Dynamic (auto-determined based on task and system)
+- **Default Workers**: 4 (if not specified)
+- **Maximum Workers**: Based on system resources
 - **Task Specification File**: `task.md`
 - **Output Directory**: `outputs/`
-- **Worker Instructions Directory**: Project root (worker[1-4]_instructions.md)
+- **Worker Instructions Directory**: Project root (worker[N]_instructions.md)
 - **Worker Logs Directory**: `logs/`
 - **Communication Directory**: `comm/`
 - **Final Report Location**: `outputs/reports/final_report.md`
@@ -42,19 +44,110 @@ Same as tmux mode - outputs go to appropriate directories.
 
 **You are managing background processes, not interactive panes.**
 
-## Phase 1: Process Environment Setup
+## Phase 1: Dynamic Worker Determination and Environment Setup
 
 ```bash
 # 1. Save current directory
 WORK_DIR=$(pwd)
 
-# 2. Create required directories
+# 2. Analyze system resources
+analyze_system_resources() {
+    # Get CPU cores
+    CPU_CORES=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+    
+    # Get available memory in GB
+    if command -v free >/dev/null 2>&1; then
+        MEM_GB=$(free -g | awk '/^Mem:/{print $7}')
+    elif command -v vm_stat >/dev/null 2>&1; then
+        MEM_GB=$(($(vm_stat | awk '/Pages free:/{print $3}' | sed 's/\.//')*4096/1024/1024/1024))
+    else
+        MEM_GB=8  # Default assumption
+    fi
+    
+    # Check system load
+    LOAD_AVG=$(uptime | awk -F'load average:' '{print $2}' | awk '{print $1}' | sed 's/,//')
+    
+    echo "System Resources:"
+    echo "- CPU cores: $CPU_CORES"
+    echo "- Available memory: ${MEM_GB}GB"
+    echo "- Current load: $LOAD_AVG"
+}
+
+# 3. Analyze task complexity
+analyze_task_complexity() {
+    # Read task description
+    TASK_DESC=$(grep -A 10 "## Task Description" task.md | tail -n +2)
+    
+    # Estimate complexity based on keywords
+    COMPLEXITY_SCORE=0
+    
+    # Development indicators
+    if echo "$TASK_DESC" | grep -qi "full.stack\|backend.*frontend\|microservice\|distributed"; then
+        COMPLEXITY_SCORE=$((COMPLEXITY_SCORE + 3))
+    fi
+    
+    # Research indicators
+    if echo "$TASK_DESC" | grep -qi "research\|analyze\|investigate\|compare.*multiple"; then
+        COMPLEXITY_SCORE=$((COMPLEXITY_SCORE + 2))
+    fi
+    
+    # Scale indicators
+    if echo "$TASK_DESC" | grep -qi "large.scale\|enterprise\|production\|comprehensive"; then
+        COMPLEXITY_SCORE=$((COMPLEXITY_SCORE + 2))
+    fi
+    
+    # Parallel work indicators
+    if echo "$TASK_DESC" | grep -qi "parallel\|simultaneous\|concurrent\|multiple.*components"; then
+        COMPLEXITY_SCORE=$((COMPLEXITY_SCORE + 3))
+    fi
+    
+    echo "Task Complexity Score: $COMPLEXITY_SCORE"
+}
+
+# 4. Determine optimal worker count
+determine_worker_count() {
+    analyze_system_resources
+    analyze_task_complexity
+    
+    # Base calculation
+    MAX_BY_CPU=$((CPU_CORES * 2))  # Can oversubscribe CPU
+    MAX_BY_MEM=$((MEM_GB / 2))      # Assume 2GB per Claude instance
+    
+    # Task-based recommendation
+    if [ $COMPLEXITY_SCORE -le 2 ]; then
+        TASK_WORKERS=2
+    elif [ $COMPLEXITY_SCORE -le 5 ]; then
+        TASK_WORKERS=4
+    elif [ $COMPLEXITY_SCORE -le 8 ]; then
+        TASK_WORKERS=6
+    else
+        TASK_WORKERS=8
+    fi
+    
+    # Final decision (minimum of all constraints)
+    WORKER_COUNT=$TASK_WORKERS
+    [ $WORKER_COUNT -gt $MAX_BY_CPU ] && WORKER_COUNT=$MAX_BY_CPU
+    [ $WORKER_COUNT -gt $MAX_BY_MEM ] && WORKER_COUNT=$MAX_BY_MEM
+    [ $WORKER_COUNT -lt 2 ] && WORKER_COUNT=2  # Minimum 2 workers
+    
+    echo ""
+    echo "Worker Count Decision:"
+    echo "- Task suggests: $TASK_WORKERS workers"
+    echo "- CPU limit: $MAX_BY_CPU workers"
+    echo "- Memory limit: $MAX_BY_MEM workers"
+    echo "- Final decision: $WORKER_COUNT workers"
+}
+
+# 5. Setup environment with dynamic workers
+determine_worker_count
+
+# Create required directories
 mkdir -p logs comm outputs/{development,research,content,reports,temp}
 
-# 3. Clear previous session files
+# Clear previous session files
 rm -f logs/worker*.log comm/worker*_status.txt
 
-# 4. Initialize Git workflow (if in repository)
+# Initialize Git workflow (if in repository)
 if git rev-parse --git-dir > /dev/null 2>&1; then
     ORIGINAL_BRANCH=$(git branch --show-current)
     WORK_BRANCH="work/task-$(date +%Y%m%d-%H%M%S)"
@@ -63,8 +156,11 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
     git commit -m "Start task: $(head -n 20 task.md | grep -A 2 'Task Description' | tail -n +2 | tr '\n' ' ' | cut -c 1-50)..." 2>/dev/null || true
 fi
 
-# 5. Launch worker processes
-for i in {1..4}; do
+# 6. Launch worker processes
+echo ""
+echo "Launching $WORKER_COUNT worker processes..."
+
+for i in $(seq 1 $WORKER_COUNT); do
     echo "Starting Worker $i..."
     
     # Create worker launch script
@@ -89,7 +185,10 @@ EOF
     sleep 2  # Stagger launches
 done
 
-echo "All worker processes launched"
+echo "All $WORKER_COUNT worker processes launched"
+
+# Save worker count for later phases
+echo $WORKER_COUNT > comm/worker_count.txt
 ```
 
 ## Phase 2: Task Assignment
@@ -107,16 +206,20 @@ Same as tmux mode - create worker[1-4]_instructions.md files, but modify communi
 ## Phase 3: Process Monitoring
 
 ```bash
+# Get worker count from saved file
+WORKER_COUNT=$(cat comm/worker_count.txt 2>/dev/null || echo 4)
+
 # Monitor all worker processes
 monitor_workers() {
     while true; do
         clear
         echo "=== WORKER PROCESS MONITOR ==="
         echo "Time: $(date)"
+        echo "Active Workers: $WORKER_COUNT"
         echo ""
         
         # Check process status
-        for i in {1..4}; do
+        for i in $(seq 1 $WORKER_COUNT); do
             if [ -f "comm/worker${i}.pid" ]; then
                 PID=$(cat "comm/worker${i}.pid")
                 if ps -p $PID > /dev/null; then
@@ -131,7 +234,7 @@ monitor_workers() {
         echo "=== RECENT STATUS UPDATES ==="
         
         # Show recent status from each worker
-        for i in {1..4}; do
+        for i in $(seq 1 $WORKER_COUNT); do
             echo "--- Worker $i ---"
             if [ -f "comm/worker${i}_status.txt" ]; then
                 tail -3 "comm/worker${i}_status.txt"
@@ -148,7 +251,9 @@ monitor_workers() {
 # Check for completion
 check_completion() {
     local completed=0
-    for i in {1..4}; do
+    local worker_count=$(cat comm/worker_count.txt 2>/dev/null || echo 4)
+    
+    for i in $(seq 1 $worker_count); do
         if [ -f "comm/worker${i}_status.txt" ]; then
             if grep -q "COMPLETED:" "comm/worker${i}_status.txt"; then
                 ((completed++))
@@ -156,12 +261,40 @@ check_completion() {
         fi
     done
     
-    if [ $completed -eq 4 ]; then
-        echo "All workers completed!"
+    if [ $completed -eq $worker_count ]; then
+        echo "All $worker_count workers completed!"
         return 0
     else
         return 1
     fi
+}
+
+# Dynamic worker scaling (can add more workers if needed)
+add_worker() {
+    local current_count=$(cat comm/worker_count.txt)
+    local new_worker_id=$((current_count + 1))
+    
+    echo "Adding Worker $new_worker_id..."
+    
+    # Create and launch new worker
+    cat > "worker${new_worker_id}_launch.sh" << EOF
+#!/bin/bash
+cd '$WORK_DIR'
+
+if [ -f "worker${new_worker_id}_instructions.md" ]; then
+    claude "Please read worker${new_worker_id}_instructions.md and execute the task. Write all status updates to comm/worker${new_worker_id}_status.txt. Save your work regularly."
+else
+    echo "No instructions found for Worker $new_worker_id"
+fi
+EOF
+    
+    chmod +x "worker${new_worker_id}_launch.sh"
+    nohup ./worker${new_worker_id}_launch.sh > logs/worker${new_worker_id}.log 2>&1 &
+    echo $! > "comm/worker${new_worker_id}.pid"
+    
+    # Update worker count
+    echo $new_worker_id > comm/worker_count.txt
+    echo "Worker $new_worker_id added successfully"
 }
 
 # Git progress management (same as tmux mode)
@@ -199,16 +332,20 @@ collect_results() {
 complete_task() {
     echo "=== TASK COMPLETION SEQUENCE ==="
     
+    # Get final worker count
+    WORKER_COUNT=$(cat comm/worker_count.txt 2>/dev/null || echo 4)
+    echo "Total workers used: $WORKER_COUNT"
+    
     # 1. Signal workers to finish
-    for i in {1..4}; do
+    for i in $(seq 1 $WORKER_COUNT); do
         echo "[Manager] Please complete and save all work" >> "comm/worker${i}_status.txt"
     done
     
     sleep 10  # Give time to finish
     
     # 2. Terminate worker processes
-    echo "Terminating worker processes..."
-    for i in {1..4}; do
+    echo "Terminating $WORKER_COUNT worker processes..."
+    for i in $(seq 1 $WORKER_COUNT); do
         if [ -f "comm/worker${i}.pid" ]; then
             PID=$(cat "comm/worker${i}.pid")
             if ps -p $PID > /dev/null; then
