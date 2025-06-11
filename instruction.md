@@ -710,7 +710,11 @@ complete_task() {
         tmux kill-pane -t $pane
     done
     
-    # 4. Final report in main pane
+    # 4. Clean up worker instruction files
+    echo "Cleaning up worker instruction files..."
+    rm -f worker1_instructions.md worker2_instructions.md worker3_instructions.md worker4_instructions.md
+    
+    # 5. Final report in main pane
     echo "==================================="
     echo "TASK COMPLETED SUCCESSFULLY"
     echo "==================================="
@@ -719,6 +723,7 @@ complete_task() {
     echo ""
     echo "Summary:"
     echo "- All worker panes have been closed"
+    echo "- Worker instruction files have been cleaned up"
     echo "- Final report saved to: outputs/reports/final_report.md"
     echo "- All deliverables are in the outputs/ directory"
     echo ""
@@ -784,6 +789,8 @@ As the manager in the main pane, follow this workflow:
 ### Task Completion
 21. [ ] Ensure all work is saved
 22. [ ] Thank workers for their contributions
-23. [ ] Execute `complete_task()` to close worker panes
-24. [ ] Display final completion report
-25. [ ] Remain available in main pane for follow-up
+23. [ ] Execute `complete_task()` to:
+    - [ ] Close worker panes
+    - [ ] Delete worker instruction files
+    - [ ] Display completion report
+24. [ ] Remain available in main pane for follow-up
