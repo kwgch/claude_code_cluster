@@ -34,10 +34,61 @@ echo -e "${GREEN}║           Claude Code Task Management System               
 echo -e "${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo
 
-# Check if task.md exists and has a task description
+# Check if task.md exists
+if [ ! -f "task.md" ]; then
+    print_warning "task.md not found. Creating template..."
+    
+    # Create task.md with template
+    cat > task.md << 'EOF'
+# Task Specification
+
+## Task Type
+<!-- development / research / content / problem-solving / discussion -->
+
+## Task Description
+<!-- Describe your task here. A simple one-liner or detailed description are both fine. -->
+
+## Specific Requirements (Optional)
+<!-- List any specific requirements. You can delete this section if not needed. -->
+
+## Expected Outputs (Optional)
+<!-- Describe expected outputs. You can delete this section if not needed. -->
+
+## Additional Context (Optional)
+<!-- Add any additional context. You can delete this section if not needed. -->
+EOF
+    
+    print_success "task.md created with template"
+    echo
+    echo -e "${YELLOW}Please edit task.md and specify your task before continuing.${NC}"
+    echo
+    echo -e "${BLUE}Examples:${NC}"
+    echo -e "  ${GREEN}Build a REST API for user management with JWT authentication${NC}"
+    echo -e "  ${GREEN}Research current AI trends and create a comprehensive report${NC}"
+    echo -e "  ${GREEN}Develop a real-time chat application with React and WebSocket${NC}"
+    echo
+    echo -e "${YELLOW}Opening task.md in your default editor...${NC}"
+    
+    # Try to open in editor
+    if command -v code &> /dev/null; then
+        code task.md
+    elif command -v nano &> /dev/null; then
+        nano task.md
+    elif command -v vim &> /dev/null; then
+        vim task.md
+    else
+        print_warning "Please manually edit task.md with your preferred editor"
+    fi
+    
+    echo
+    read -p "Press Enter when you've finished editing task.md..."
+    echo
+fi
+
+# Check if task.md has a task description
 if [ -f "task.md" ]; then
     # Check if task description is empty or still has placeholder
-    if ! grep -A 2 "## Task Description" task.md | grep -v "^#" | grep -v "^<" | grep -v "^$" | grep -q "[a-zA-Z]"; then
+    if grep -q "Describe your task here" task.md || ! grep -A 2 "## Task Description" task.md | grep -v "^#" | grep -v "^<" | grep -v "^$" | grep -q "[a-zA-Z]"; then
         print_warning "task.md does not contain a task description!"
         echo
         echo -e "${YELLOW}The task specification has not been filled out.${NC}"
@@ -54,10 +105,6 @@ if [ -f "task.md" ]; then
             exit 1
         fi
     fi
-else
-    print_error "task.md not found in current directory!"
-    print_status "Please ensure you're in the correct project directory."
-    exit 1
 fi
 
 # Check if tmux is installed
