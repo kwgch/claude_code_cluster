@@ -129,6 +129,12 @@ tmux send-keys -t $PANE1 "You are pane1. Research machine learning trends for 20
 
 ## Troubleshooting
 
+### Emergency Stop
+```bash
+tmux kill-server
+```
+**WARNING**: This will terminate ALL tmux sessions and their processes immediately. Use this when you need to stop everything quickly.
+
 ### Common Issues
 
 1. **Pane Not Responding**
