@@ -101,6 +101,20 @@ wait
 
 ## 4. Communication System (Report, Contact, Consultation)
 
+### ⚠️ IMPORTANT: Message Confirmation
+**All messages sent via `tmux send-keys` MUST be confirmed with Enter to be delivered!**
+
+```bash
+# ❌ WRONG - Message will NOT be sent
+tmux send-keys -t $MAIN_PANE "Message"
+
+# ✅ CORRECT - Message will be sent
+tmux send-keys -t $MAIN_PANE "Message" Enter
+
+# ✅ ALSO CORRECT - With sleep for stability
+tmux send-keys -t $MAIN_PANE "Message" && sleep 0.1 && tmux send-keys -t $MAIN_PANE Enter
+```
+
 ### 4.1 Report Format
 
 ```bash
@@ -343,6 +357,12 @@ done
 ### Phase 2: Task Assignment Commands (Manager's Toolkit)
 
 As the manager, you will assign tasks to worker panes. Always include clear instructions and reporting requirements.
+
+#### ⚠️ Critical Communication Rule
+**ALWAYS end tmux send-keys commands with Enter to confirm the message!**
+- Without Enter, the message sits in the input buffer but is NOT executed
+- Use `&& sleep 0.1 &&` between the message and Enter for stability
+- This applies to ALL inter-pane communications
 
 #### Manager's Task Assignment Philosophy
 - Break down complex tasks into parallel workstreams
