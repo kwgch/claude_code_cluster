@@ -1,9 +1,6 @@
 # Task-specific files
 task.md
-worker1_instructions.md
-worker2_instructions.md
-worker3_instructions.md
-worker4_instructions.md
+worker*_instructions.md
 worker*_launch.sh
 
 # Outputs directory (keep structure, ignore contents)
