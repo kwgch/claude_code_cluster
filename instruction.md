@@ -8,8 +8,11 @@
 4. **Monitor progress** and coordinate between workers
 5. **Collect and integrate results** from all workers
 6. **Generate the final deliverables**
+7. **Close worker panes** and provide completion report when finished
 
 **You are NOT a worker - you are the orchestrator and supervisor of the entire operation.**
+
+**Default Behavior**: Unless instructed otherwise, automatically close all worker panes upon task completion and provide a final summary report.
 
 ## 1. Introduction
 
@@ -653,16 +656,55 @@ EOF
 }
 ```
 
-### Phase 5: Cleanup
+### Phase 5: Task Completion and Cleanup
 
 ```bash
-# Clear all panes
+# Final cleanup and completion
+complete_task() {
+    echo "=== TASK COMPLETION SEQUENCE ==="
+    
+    # 1. Save all work
+    echo "Ensuring all work is saved..."
+    for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
+        tmux send-keys -t $pane "Please save any unsaved work immediately." && sleep 0.1 && tmux send-keys -t $pane Enter
+    done
+    sleep 5
+    
+    # 2. Thank workers
+    echo "Thanking workers..."
+    for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
+        tmux send-keys -t $pane "Thank you for your contributions. This session will now close." && sleep 0.1 && tmux send-keys -t $pane Enter
+    done
+    sleep 2
+    
+    # 3. Close worker panes
+    echo "Closing worker panes..."
+    for pane in $PANE4 $PANE3 $PANE2 $PANE1; do
+        tmux kill-pane -t $pane
+    done
+    
+    # 4. Final report in main pane
+    echo "==================================="
+    echo "TASK COMPLETED SUCCESSFULLY"
+    echo "==================================="
+    echo "Date: $(date)"
+    echo "Duration: [Calculate from start time]"
+    echo ""
+    echo "Summary:"
+    echo "- All worker panes have been closed"
+    echo "- Final report saved to: outputs/reports/final_report.md"
+    echo "- All deliverables are in the outputs/ directory"
+    echo ""
+    echo "The manager (main pane) remains active for any follow-up tasks."
+}
+
+# Alternative: Just clear panes without closing
 cleanup_panes() {
     for pane in $PANE1 $PANE2 $PANE3 $PANE4; do
         tmux send-keys -t $pane "/clear" && sleep 0.1 && tmux send-keys -t $pane Enter &
     done
     wait
-    echo "All panes cleared"
+    echo "All panes cleared (but still active)"
 }
 ```
 
@@ -750,7 +792,9 @@ As the manager in the main pane, follow this workflow:
 19. [ ] Create integrated final deliverable
 20. [ ] Generate comprehensive final report
 
-### Cleanup
+### Task Completion
 21. [ ] Ensure all work is saved
 22. [ ] Thank workers for their contributions
-23. [ ] Clear all panes to free resources
+23. [ ] Execute `complete_task()` to close worker panes
+24. [ ] Display final completion report
+25. [ ] Remain available in main pane for follow-up
