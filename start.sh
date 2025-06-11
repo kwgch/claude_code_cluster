@@ -34,6 +34,32 @@ echo -e "${GREEN}║           Claude Code Task Management System               
 echo -e "${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo
 
+# Check if instruction.md exists and has default values
+if [ -f "instruction.md" ]; then
+    # Check for default placeholder values in instruction.md
+    if grep -q "\[YOUR_TASK_DESCRIPTION\]" instruction.md; then
+        print_warning "instruction.md still contains default placeholder values!"
+        echo
+        echo -e "${YELLOW}The USER TASK SPECIFICATION section has not been filled out.${NC}"
+        echo -e "${YELLOW}Please edit instruction.md and specify your task before continuing.${NC}"
+        echo
+        echo -e "${BLUE}Quick tip:${NC} You can use a simple one-line task description like:"
+        echo -e "  ${GREEN}Build a REST API for user management${NC}"
+        echo -e "  ${GREEN}Research AI applications in healthcare and create a report${NC}"
+        echo
+        read -p "Do you want to continue with the default template? (y/n): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            print_status "Please edit instruction.md first, then run this script again."
+            exit 1
+        fi
+    fi
+else
+    print_error "instruction.md not found in current directory!"
+    print_status "Please ensure you're in the correct project directory."
+    exit 1
+fi
+
 # Check if tmux is installed
 if ! command -v tmux &> /dev/null; then
     print_error "tmux is not installed. Please install tmux first."
