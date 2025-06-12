@@ -40,7 +40,8 @@ This project is a framework that enables **Claude Code to dynamically spawn as m
 ### Parallel Execution Mechanism
 ```javascript
 // Launch Claude CLI with PTY environment for each worker
-const ptyProcess = pty.spawn('claude', [instructions], {
+const ptyProcess = pty.spawn('claude', ['--dangerously-skip-permissions'], {
+    instructions: instructions
     name: 'xterm-color',
     env: { TERM: 'xterm-256color' }
 });
