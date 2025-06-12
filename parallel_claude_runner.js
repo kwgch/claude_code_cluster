@@ -38,6 +38,7 @@ class ParallelClaudeRunner {
         // Claude command with instruction to read file and communicate via status file
         const claudeCommand = [
             'claude',
+            '--dangerously-skip-permissions',
             `"Please read ${instructionFile} and execute the task. Write status updates to ${workerStatusPath} using the format: echo '[Worker${workerId}] Status: Your message' >> ${workerStatusPath}. Mark completion with COMPLETED: when done."`
         ].join(' ');
 
